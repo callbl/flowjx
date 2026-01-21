@@ -1,7 +1,7 @@
 import { Toolbar } from '@/ui/toolbar/Toolbar'
 import { ToolsPanel } from '@/ui/panels/ToolsPanel'
 import { PropertiesPanel } from '@/ui/panels/PropertiesPanel'
-import { ViewportPlaceholder } from '@/editor/canvas/ViewportPlaceholder'
+import { Viewport } from '@/editor/canvas/Viewport'
 
 export function EditorLayout() {
   return (
@@ -9,7 +9,7 @@ export function EditorLayout() {
       <Toolbar />
       <div className="flex-1 relative">
         <ToolsPanel />
-        <ViewportPlaceholder />
+        <Viewport />
         <PropertiesPanel />
       </div>
     </div>
