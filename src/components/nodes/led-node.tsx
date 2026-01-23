@@ -9,10 +9,8 @@ export function LedNode({ data }: { data: LedData }) {
       <div className="font-semibold text-sm mb-2">{data.label}</div>
       <div className="flex justify-center mb-2">
         <div
-          className={`w-12 h-12 rounded-full border-4 transition-all duration-300 ${
-            isPowered
-              ? "border-yellow-400 bg-yellow-300 shadow-lg shadow-yellow-400/50"
-              : "border-red-400 bg-red-100"
+          className={`size-12 rounded-full border-4 transition-all border-red-400 duration-300 ${
+            isPowered ? "bg-red-400 shadow-lg" : "border-red-400 bg-red-100"
           }`}
         />
       </div>
@@ -22,7 +20,7 @@ export function LedNode({ data }: { data: LedData }) {
         position={Position.Left}
         id="anode"
         style={{ top: "35%", background: "#f87171" }}
-        className="w-3 h-3"
+        className="size-3"
       />
       {/* Cathode handle (bottom) */}
       <Handle
@@ -30,7 +28,7 @@ export function LedNode({ data }: { data: LedData }) {
         position={Position.Left}
         id="cathode"
         style={{ top: "65%", background: "#dc2626" }}
-        className="w-3 h-3"
+        className="size-3"
       />
     </div>
   );
