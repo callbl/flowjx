@@ -13,16 +13,8 @@ import {
   type Node,
 } from "@xyflow/react";
 import { Button } from "./ui/button";
+import { ColorSelector } from "./color-selector";
 import { useCircuitActions } from "@/hooks/use-circuit";
-
-// Define color options that work well in both light and dark modes
-const EDGE_COLORS = [
-  { name: "red", value: "#ef4444", label: "Red" },
-  { name: "black", value: "#334155", label: "Black" },
-  { name: "green", value: "#22c55e", label: "Green" },
-  { name: "yellow", value: "#eab308", label: "Yellow" },
-  { name: "gray", value: "#94a3b8", label: "Gray" },
-] as const;
 
 export type DataEdge<T extends Node = Node> = Edge<{
   /**
@@ -134,22 +126,10 @@ export function DataEdge({
               zIndex: 1000,
             }}
           >
-            {EDGE_COLORS.map((color) => (
-              <button
-                key={color.name}
-                onClick={() => handleColorChange(color.value)}
-                title={color.label}
-                className="size-4 rounded border border-border hover:scale-110 transition-transform cursor-pointer"
-                style={{
-                  backgroundColor: color.value,
-                  outline:
-                    data.color === color.value
-                      ? `1px solid ${color.value}`
-                      : "none",
-                  outlineOffset: "1px",
-                }}
-              />
-            ))}
+            <ColorSelector
+              selectedColor={data.color}
+              onColorChange={handleColorChange}
+            />
             <div className="h-4 w-px bg-border mx-0.5" />
             <Button
               variant="ghost"
