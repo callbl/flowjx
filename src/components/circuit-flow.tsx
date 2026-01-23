@@ -1,11 +1,12 @@
-import { useEffect } from "react";
-import { ToolCaseIcon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { DownloadIcon, ToolCaseIcon, UploadIcon } from "lucide-react";
 import {
   ReactFlow,
   Panel,
   Background,
   Controls,
   BackgroundVariant,
+  useReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
@@ -29,7 +30,15 @@ import {
   useIsPanelOpen,
   useSetPanelOpen,
   useCircuitActions,
+  useSetNodes,
+  useSetEdges,
 } from "@/hooks/use-circuit";
+import { downloadTextFile } from "@/persistence/download";
+import {
+  serializeCircuitFile,
+  parseCircuitFile,
+  CircuitFileParseError,
+} from "@/persistence/circuit-file";
 
 const nodeTypes = {
   battery: BatteryNode,
@@ -69,14 +78,25 @@ const equipmentItems: Array<{
   { type: "button", label: "Button", icon: "🔘" },
 ];
 
-export function CircuitFlow() {
+function CircuitFlowInner() {
   // Zustand store hooks
   const nodes = useNodes();
   const edges = useEdges();
+  const setNodes = useSetNodes();
+  const setEdges = useSetEdges();
   const { onNodesChange, onEdgesChange, onConnect } = useReactFlowCallbacks();
   const isPanelOpen = useIsPanelOpen();
   const setPanelOpen = useSetPanelOpen();
-  const { addNode, logConnections } = useCircuitActions();
+  const { addNode, logConnections, runSimulation } = useCircuitActions();
+
+  // React Flow instance for toObject() and setViewport()
+  const { toObject, setViewport } = useReactFlow();
+
+  // File input ref for import
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Import error state
+  const [importError, setImportError] = useState<string | null>(null);
 
   // Auto-log connections every 10 seconds
   useEffect(() => {
@@ -86,6 +106,68 @@ export function CircuitFlow() {
 
     return () => clearInterval(interval);
   }, [logConnections]);
+
+  // Clear import error after 5 seconds
+  useEffect(() => {
+    if (importError) {
+      const timeout = setTimeout(() => setImportError(null), 5000);
+      return () => clearTimeout(timeout);
+    }
+  }, [importError]);
+
+  // Export handler
+  const handleExport = () => {
+    const flow = toObject();
+    const circuitFile = serializeCircuitFile(flow);
+    const json = JSON.stringify(circuitFile, null, 2);
+    const filename = `diagram-${Date.now()}.circuit`;
+
+    downloadTextFile({
+      filename,
+      text: json,
+      mimeType: "application/json",
+    });
+  };
+
+  // Import handler
+  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const circuitFile = parseCircuitFile(text);
+
+      // Restore nodes and edges
+      setNodes(circuitFile.flow.nodes || []);
+      setEdges(circuitFile.flow.edges || []);
+
+      // Restore viewport with defaults if missing
+      const viewport = circuitFile.flow.viewport || { x: 0, y: 0, zoom: 1 };
+      setViewport(viewport);
+
+      // Run simulation to update LED states
+      runSimulation();
+
+      setImportError(null);
+    } catch (error) {
+      if (error instanceof CircuitFileParseError) {
+        setImportError(error.message);
+      } else {
+        setImportError("Failed to load circuit file");
+      }
+    } finally {
+      // Reset file input so the same file can be imported again
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  // Trigger file input click
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
 
   return (
     <div className="h-screen w-screen">
@@ -132,7 +214,55 @@ export function CircuitFlow() {
             </SheetContent>
           </Sheet>
         </Panel>
+
+        {/* Export/Import Panel - Top Right */}
+        <Panel position="top-right">
+          <div className="flex flex-col gap-2">
+            {/* Export Button */}
+            <Button
+              className="shadow-lg"
+              size="icon"
+              variant="secondary"
+              onClick={handleExport}
+              title="Export circuit"
+            >
+              <DownloadIcon />
+            </Button>
+
+            {/* Import Button */}
+            <Button
+              className="shadow-lg"
+              size="icon"
+              variant="secondary"
+              onClick={handleImportClick}
+              title="Import circuit"
+            >
+              <UploadIcon />
+            </Button>
+
+            {/* Hidden File Input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".circuit,application/json"
+              onChange={handleImport}
+              style={{ display: "none" }}
+            />
+
+            {/* Import Error Message */}
+            {importError && (
+              <div className="bg-red-500 text-white text-xs p-2 rounded shadow-lg max-w-[200px]">
+                {importError}
+              </div>
+            )}
+          </div>
+        </Panel>
       </ReactFlow>
     </div>
   );
+}
+
+// Wrapper component that provides ReactFlowProvider context
+export function CircuitFlow() {
+  return <CircuitFlowInner />;
 }
