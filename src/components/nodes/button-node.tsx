@@ -2,9 +2,11 @@ import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
 import { Button } from "../ui/button";
 import type { ButtonData } from "../circuit-flow";
 import { NodeToolbarContent } from "../node-toolbar-content";
+import { useCircuitActions } from "@/hooks/use-circuit";
 
 export function ButtonNode({ id, data, selected }: NodeProps<Node<ButtonData>>) {
   const isClosed = data.isClosed || false;
+  const { toggleButton } = useCircuitActions();
 
   return (
     <>
@@ -16,7 +18,7 @@ export function ButtonNode({ id, data, selected }: NodeProps<Node<ButtonData>>) 
             variant={isClosed ? "default" : "outline"}
             size="sm"
             className="nodrag"
-            onClick={() => data.onToggle?.()}
+            onClick={() => toggleButton(id)}
           >
             {isClosed ? "ON" : "OFF"}
           </Button>
