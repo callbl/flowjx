@@ -1,5 +1,7 @@
+import { CircuitEditor } from "./components/CircuitEditor";
+
 const App = () => {
-  return <div>Home Screen</div>;
+  return <CircuitEditor />;
 };
 
 App.displayName = "App";
