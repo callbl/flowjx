@@ -1,14 +1,18 @@
 import { Copy, Trash2 } from "lucide-react";
 import { NodeToolbar, Position } from "@xyflow/react";
 import { Button } from "./ui/button";
-import { useCircuitActions } from "@/hooks/use-circuit";
+import { ColorSelector } from "./color-selector";
+import { useCircuitActions, useNode } from "@/hooks/use-circuit";
+import type { LedData } from "./circuit-flow";
 
 type NodeToolbarContentProps = {
   nodeId: string;
 };
 
 export function NodeToolbarContent({ nodeId }: NodeToolbarContentProps) {
-  const { deleteNode, duplicateNode } = useCircuitActions();
+  const { deleteNode, duplicateNode, updateNodeData } = useCircuitActions();
+  const node = useNode(nodeId);
+  const isLed = node?.type === "led";
 
   const handleDelete = () => {
     deleteNode(nodeId);
@@ -18,6 +22,10 @@ export function NodeToolbarContent({ nodeId }: NodeToolbarContentProps) {
     duplicateNode(nodeId);
   };
 
+  const handleColorChange = (color: string) => {
+    updateNodeData<LedData>(nodeId, { color });
+  };
+
   return (
     <NodeToolbar
       nodeId={nodeId}
@@ -25,6 +33,15 @@ export function NodeToolbarContent({ nodeId }: NodeToolbarContentProps) {
       position={Position.Top}
       className="flex gap-1 bg-background border rounded-md shadow-lg p-1"
     >
+      {isLed && (
+        <>
+          <ColorSelector
+            selectedColor={(node.data as LedData).color}
+            onColorChange={handleColorChange}
+          />
+          <div className="h-4 w-px bg-border mx-0.5" />
+        </>
+      )}
       <Button
         variant="ghost"
         size="icon-sm"
