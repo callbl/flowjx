@@ -17,7 +17,7 @@ export function LedNode({ id, data, selected }: NodeProps<Node<LedData>>) {
             }`}
           />
         </div>
-        {/* Anode handle (top) */}
+        {/* Anode handle (positive terminal) - both input and output */}
         <Handle
           type="target"
           position={Position.Left}
@@ -25,9 +25,23 @@ export function LedNode({ id, data, selected }: NodeProps<Node<LedData>>) {
           style={{ top: "35%", background: "#f87171" }}
           className="size-3"
         />
-        {/* Cathode handle (bottom) */}
+        <Handle
+          type="source"
+          position={Position.Left}
+          id="anode"
+          style={{ top: "35%", background: "#f87171" }}
+          className="size-3"
+        />
+        {/* Cathode handle (negative terminal) - both input and output */}
         <Handle
           type="target"
+          position={Position.Left}
+          id="cathode"
+          style={{ top: "65%", background: "#dc2626" }}
+          className="size-3"
+        />
+        <Handle
+          type="source"
           position={Position.Left}
           id="cathode"
           style={{ top: "65%", background: "#dc2626" }}
