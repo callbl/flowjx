@@ -15,6 +15,15 @@ import {
 } from "@xyflow/react";
 import { Button } from "./ui/button";
 
+// Define color options that work well in both light and dark modes
+const EDGE_COLORS = [
+  { name: "red", value: "#ef4444", label: "Red" },
+  { name: "black", value: "#334155", label: "Black" },
+  { name: "green", value: "#22c55e", label: "Green" },
+  { name: "yellow", value: "#eab308", label: "Yellow" },
+  { name: "gray", value: "#94a3b8", label: "Gray" },
+] as const;
+
 export type DataEdge<T extends Node = Node> = Edge<{
   /**
    * The key to lookup in the source node's `data` object. For additional safety,
@@ -32,6 +41,10 @@ export type DataEdge<T extends Node = Node> = Edge<{
    * If not provided, this defaults to `"bezier"`.
    */
   path?: "bezier" | "smoothstep" | "step" | "straight";
+  /**
+   * The color of the edge. If not provided, defaults to foreground color.
+   */
+  color?: string;
 }>;
 
 export function DataEdge({
@@ -82,12 +95,40 @@ export function DataEdge({
     setEdges((edges) => edges.filter((edge) => edge.id !== id));
   };
 
+  const handleColorChange = (color: string) => {
+    setEdges((edges) =>
+      edges.map((edge) => {
+        if (edge.id === id) {
+          return {
+            ...edge,
+            data: {
+              ...edge.data,
+              color,
+            },
+          };
+        }
+        return edge;
+      }),
+    );
+  };
+
   const labelTransform = `translate(${labelX}px,${labelY}px) translate(-50%, -50%)`;
   const toolbarTransform = `translate(${labelX}px,${labelY - 30}px) translate(-50%, -50%)`;
 
+  const edgeColor = data.color || undefined;
+  const edgeStyle = {
+    ...style,
+    ...(edgeColor && { stroke: edgeColor, strokeWidth: 2 }),
+  };
+
   return (
     <>
-      <BaseEdge id={id} path={edgePath} markerEnd={markerEnd} style={style} />
+      <BaseEdge
+        id={id}
+        path={edgePath}
+        markerEnd={markerEnd}
+        style={edgeStyle}
+      />
       <EdgeLabelRenderer>
         {data.key && (
           <div
@@ -99,13 +140,30 @@ export function DataEdge({
         )}
         {selected && (
           <div
-            className="absolute flex gap-1 bg-background border rounded-lg shadow-lg p-1 nopan"
+            className="absolute flex flex-wrap items-center justify-center gap-1 bg-background border rounded-lg shadow-lg p-1 nopan"
             style={{
               transform: toolbarTransform,
               pointerEvents: "all",
               zIndex: 1000,
             }}
           >
+            {EDGE_COLORS.map((color) => (
+              <button
+                key={color.name}
+                onClick={() => handleColorChange(color.value)}
+                title={color.label}
+                className="size-4 rounded border border-border hover:scale-110 transition-transform cursor-pointer"
+                style={{
+                  backgroundColor: color.value,
+                  outline:
+                    data.color === color.value
+                      ? `1px solid ${color.value}`
+                      : "none",
+                  outlineOffset: "1px",
+                }}
+              />
+            ))}
+            <div className="h-4 w-px bg-border mx-0.5" />
             <Button
               variant="ghost"
               size="icon"
