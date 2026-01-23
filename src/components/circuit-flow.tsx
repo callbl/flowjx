@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { DownloadIcon, ToolCaseIcon, UploadIcon } from "lucide-react";
+import { DownloadIcon, ToolCaseIcon, UploadIcon, MenuIcon } from "lucide-react";
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -24,6 +24,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 import {
   useNodes,
   useEdges,
@@ -216,30 +222,31 @@ function CircuitFlowInner() {
           </Sheet>
         </Panel>
 
-        {/* Export/Import Panel - Top Right */}
+        {/* File Menu - Top Right */}
         <Panel position="top-right">
           <div className="flex flex-col gap-2">
-            {/* Export Button */}
-            <Button
-              className="shadow-lg"
-              size="icon"
-              variant="secondary"
-              onClick={handleExport}
-              title="Export circuit"
-            >
-              <DownloadIcon />
-            </Button>
-
-            {/* Import Button */}
-            <Button
-              className="shadow-lg"
-              size="icon"
-              variant="secondary"
-              onClick={handleImportClick}
-              title="Import circuit"
-            >
-              <UploadIcon />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  className="shadow-lg"
+                  size="icon"
+                  variant="secondary"
+                  title="File menu"
+                >
+                  <MenuIcon />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleExport}>
+                  <DownloadIcon />
+                  Export
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleImportClick}>
+                  <UploadIcon />
+                  Import
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* Hidden File Input */}
             <input
