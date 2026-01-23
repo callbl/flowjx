@@ -54,7 +54,6 @@ export type LedData = {
 export type ButtonData = {
   label: string;
   isClosed: boolean;
-  onToggle?: () => void;
 };
 
 type EquipmentType = "battery" | "led" | "button";
