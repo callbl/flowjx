@@ -31,7 +31,7 @@ export function NodeToolbarContent({ nodeId }: NodeToolbarContentProps) {
       nodeId={nodeId}
       isVisible
       position={Position.Top}
-      className="flex gap-1 bg-background border rounded-md shadow-lg p-1"
+      className="flex items-center justify-center gap-1 bg-background border rounded-md shadow-lg p-1"
     >
       {isLed && (
         <>
