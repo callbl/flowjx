@@ -190,10 +190,17 @@ export function simulateCircuit(
           cathodeNeighbors.forEach((neighbor) => {
             const neighborKey = `${neighbor.nodeId}:${neighbor.handleId}`;
             if (!visited.has(neighborKey)) {
+              // If flowing to a different node, add it to path
+              // If flowing internally (same node), don't add to path
+              const newPath =
+                neighbor.nodeId !== current.nodeId
+                  ? [...current.path, neighbor.nodeId]
+                  : current.path;
+
               queue.push({
                 nodeId: neighbor.nodeId,
                 handleId: neighbor.handleId,
-                path: current.path, // Don't add LED again to path
+                path: newPath,
               });
             }
           });
