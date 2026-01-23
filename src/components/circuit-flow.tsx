@@ -1,4 +1,5 @@
 import { useCallback, useState, useEffect } from "react";
+import { MenuIcon, XIcon } from "lucide-react";
 import {
   ReactFlow,
   Panel,
@@ -47,7 +48,11 @@ export type ButtonData = {
   onToggle?: () => void;
 };
 
-const equipmentItems: Array<{ type: EquipmentType; label: string; icon: string }> = [
+const equipmentItems: Array<{
+  type: EquipmentType;
+  label: string;
+  icon: string;
+}> = [
   { type: "battery", label: "Battery", icon: "🔋" },
   { type: "led", label: "LED", icon: "💡" },
   { type: "button", label: "Button", icon: "🔘" },
@@ -60,144 +65,165 @@ export function CircuitFlow() {
 
   const onConnect: OnConnect = useCallback(
     (params) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges]
+    [setEdges],
   );
 
-  const simulateCircuit = useCallback((currentNodes: Node[], currentEdges: Edge[]) => {
-    // Build adjacency list from edges
-    const graph = new Map<string, Array<{ nodeId: string; handleId: string }>>();
+  const simulateCircuit = useCallback(
+    (currentNodes: Node[], currentEdges: Edge[]) => {
+      // Build adjacency list from edges
+      const graph = new Map<
+        string,
+        Array<{ nodeId: string; handleId: string }>
+      >();
 
-    currentEdges.forEach((edge) => {
-      const sourceKey = `${edge.source}:${edge.sourceHandle}`;
-      const targetKey = `${edge.target}:${edge.targetHandle}`;
+      currentEdges.forEach((edge) => {
+        const sourceKey = `${edge.source}:${edge.sourceHandle}`;
+        const targetKey = `${edge.target}:${edge.targetHandle}`;
 
-      if (!graph.has(sourceKey)) graph.set(sourceKey, []);
-      if (!graph.has(targetKey)) graph.set(targetKey, []);
+        if (!graph.has(sourceKey)) graph.set(sourceKey, []);
+        if (!graph.has(targetKey)) graph.set(targetKey, []);
 
-      graph.get(sourceKey)!.push({ nodeId: edge.target, handleId: edge.targetHandle || "" });
-      graph.get(targetKey)!.push({ nodeId: edge.source, handleId: edge.sourceHandle || "" });
-    });
-
-    // Find all batteries
-    const batteries = currentNodes.filter((n) => n.type === "battery");
-    const poweredLeds = new Set<string>();
-
-    // For each battery, trace circuits from + to -
-    batteries.forEach((battery) => {
-      const visited = new Set<string>();
-      const queue: Array<{ nodeId: string; handleId: string; path: string[] }> = [];
-
-      // Start from battery positive terminal
-      queue.push({
-        nodeId: battery.id,
-        handleId: "plus",
-        path: [battery.id],
+        graph
+          .get(sourceKey)!
+          .push({ nodeId: edge.target, handleId: edge.targetHandle || "" });
+        graph
+          .get(targetKey)!
+          .push({ nodeId: edge.source, handleId: edge.sourceHandle || "" });
       });
 
-      while (queue.length > 0) {
-        const current = queue.shift()!;
-        const key = `${current.nodeId}:${current.handleId}`;
+      // Find all batteries
+      const batteries = currentNodes.filter((n) => n.type === "battery");
+      const poweredLeds = new Set<string>();
 
-        if (visited.has(key)) continue;
-        visited.add(key);
+      // For each battery, trace circuits from + to -
+      batteries.forEach((battery) => {
+        const visited = new Set<string>();
+        const queue: Array<{
+          nodeId: string;
+          handleId: string;
+          path: string[];
+        }> = [];
 
-        // Check if we reached battery negative terminal - complete circuit!
-        if (current.nodeId === battery.id && current.handleId === "minus") {
-          // Mark all LEDs in this path as powered
-          current.path.forEach((nodeId) => {
-            const node = currentNodes.find((n) => n.id === nodeId);
-            if (node?.type === "led") {
-              poweredLeds.add(nodeId);
-            }
-          });
-          continue;
-        }
-
-        // Get current node
-        const currentNode = currentNodes.find((n) => n.id === current.nodeId);
-        if (!currentNode) continue;
-
-        // If it's a button and it's open, don't continue this path
-        if (currentNode.type === "button" && !(currentNode.data as ButtonData).isClosed) {
-          continue;
-        }
-
-        // Explore neighbors
-        const neighbors = graph.get(key) || [];
-        neighbors.forEach((neighbor) => {
-          const neighborKey = `${neighbor.nodeId}:${neighbor.handleId}`;
-          if (!visited.has(neighborKey)) {
-            queue.push({
-              nodeId: neighbor.nodeId,
-              handleId: neighbor.handleId,
-              path: [...current.path, neighbor.nodeId],
-            });
-          }
+        // Start from battery positive terminal
+        queue.push({
+          nodeId: battery.id,
+          handleId: "plus",
+          path: [battery.id],
         });
 
-        // For LEDs, also check the other handle
-        if (currentNode.type === "led") {
-          const otherHandle = current.handleId === "anode" ? "cathode" : "anode";
-          const otherKey = `${current.nodeId}:${otherHandle}`;
-          const otherNeighbors = graph.get(otherKey) || [];
+        while (queue.length > 0) {
+          const current = queue.shift()!;
+          const key = `${current.nodeId}:${current.handleId}`;
 
-          otherNeighbors.forEach((neighbor) => {
+          if (visited.has(key)) continue;
+          visited.add(key);
+
+          // Check if we reached battery negative terminal - complete circuit!
+          if (current.nodeId === battery.id && current.handleId === "minus") {
+            // Mark all LEDs in this path as powered
+            current.path.forEach((nodeId) => {
+              const node = currentNodes.find((n) => n.id === nodeId);
+              if (node?.type === "led") {
+                poweredLeds.add(nodeId);
+              }
+            });
+            continue;
+          }
+
+          // Get current node
+          const currentNode = currentNodes.find((n) => n.id === current.nodeId);
+          if (!currentNode) continue;
+
+          // If it's a button and it's open, don't continue this path
+          if (
+            currentNode.type === "button" &&
+            !(currentNode.data as ButtonData).isClosed
+          ) {
+            continue;
+          }
+
+          // Explore neighbors
+          const neighbors = graph.get(key) || [];
+          neighbors.forEach((neighbor) => {
             const neighborKey = `${neighbor.nodeId}:${neighbor.handleId}`;
             if (!visited.has(neighborKey)) {
               queue.push({
                 nodeId: neighbor.nodeId,
                 handleId: neighbor.handleId,
-                path: current.path,
+                path: [...current.path, neighbor.nodeId],
               });
             }
           });
-        }
 
-        // For buttons, check the other handle (in/out)
-        if (currentNode.type === "button" && (currentNode.data as ButtonData).isClosed) {
-          const otherHandle = current.handleId === "in" ? "out" : "in";
-          const otherKey = `${current.nodeId}:${otherHandle}`;
-          const otherNeighbors = graph.get(otherKey) || [];
+          // For LEDs, also check the other handle
+          if (currentNode.type === "led") {
+            const otherHandle =
+              current.handleId === "anode" ? "cathode" : "anode";
+            const otherKey = `${current.nodeId}:${otherHandle}`;
+            const otherNeighbors = graph.get(otherKey) || [];
 
-          otherNeighbors.forEach((neighbor) => {
-            const neighborKey = `${neighbor.nodeId}:${neighbor.handleId}`;
-            if (!visited.has(neighborKey)) {
-              queue.push({
-                nodeId: neighbor.nodeId,
-                handleId: neighbor.handleId,
-                path: current.path,
-              });
-            }
-          });
-        }
-      }
-    });
+            otherNeighbors.forEach((neighbor) => {
+              const neighborKey = `${neighbor.nodeId}:${neighbor.handleId}`;
+              if (!visited.has(neighborKey)) {
+                queue.push({
+                  nodeId: neighbor.nodeId,
+                  handleId: neighbor.handleId,
+                  path: current.path,
+                });
+              }
+            });
+          }
 
-    // Update LED powered states only if they changed
-    setNodes((nds) => {
-      let hasChanges = false;
-      const updatedNodes = nds.map((node) => {
-        if (node.type === "led") {
-          const shouldBePowered = poweredLeds.has(node.id);
-          const currentlyPowered = (node.data as LedData).isPowered || false;
+          // For buttons, check the other handle (in/out)
+          if (
+            currentNode.type === "button" &&
+            (currentNode.data as ButtonData).isClosed
+          ) {
+            const otherHandle = current.handleId === "in" ? "out" : "in";
+            const otherKey = `${current.nodeId}:${otherHandle}`;
+            const otherNeighbors = graph.get(otherKey) || [];
 
-          if (shouldBePowered !== currentlyPowered) {
-            hasChanges = true;
-            return {
-              ...node,
-              data: {
-                ...node.data,
-                isPowered: shouldBePowered,
-              } as LedData,
-            };
+            otherNeighbors.forEach((neighbor) => {
+              const neighborKey = `${neighbor.nodeId}:${neighbor.handleId}`;
+              if (!visited.has(neighborKey)) {
+                queue.push({
+                  nodeId: neighbor.nodeId,
+                  handleId: neighbor.handleId,
+                  path: current.path,
+                });
+              }
+            });
           }
         }
-        return node;
       });
 
-      return hasChanges ? updatedNodes : nds;
-    });
-  }, [setNodes]);
+      // Update LED powered states only if they changed
+      setNodes((nds) => {
+        let hasChanges = false;
+        const updatedNodes = nds.map((node) => {
+          if (node.type === "led") {
+            const shouldBePowered = poweredLeds.has(node.id);
+            const currentlyPowered = (node.data as LedData).isPowered || false;
+
+            if (shouldBePowered !== currentlyPowered) {
+              hasChanges = true;
+              return {
+                ...node,
+                data: {
+                  ...node.data,
+                  isPowered: shouldBePowered,
+                } as LedData,
+              };
+            }
+          }
+          return node;
+        });
+
+        return hasChanges ? updatedNodes : nds;
+      });
+    },
+    [setNodes],
+  );
 
   // Run circuit simulation whenever nodes or edges change
   useEffect(() => {
@@ -218,16 +244,17 @@ export function CircuitFlow() {
             };
           }
           return node;
-        })
+        }),
       );
     },
-    [setNodes]
+    [setNodes],
   );
 
   const addNode = useCallback(
     (type: EquipmentType) => {
       const id = crypto.randomUUID();
-      const label = equipmentItems.find((item) => item.type === type)?.label || type;
+      const label =
+        equipmentItems.find((item) => item.type === type)?.label || type;
 
       // Add node at center with small offset based on current node count
       const position = {
@@ -264,7 +291,7 @@ export function CircuitFlow() {
       setNodes((nds) => [...nds, newNode]);
       setIsPanelOpen(false); // Close panel after adding
     },
-    [nodes.length, setNodes, toggleButton]
+    [nodes.length, setNodes, toggleButton],
   );
 
   return (
@@ -286,8 +313,9 @@ export function CircuitFlow() {
           <Button
             onClick={() => setIsPanelOpen(!isPanelOpen)}
             className="shadow-lg"
+            size="icon-lg"
           >
-            {isPanelOpen ? "Close" : "Add Equipment"}
+            {isPanelOpen ? <XIcon /> : <MenuIcon />}
           </Button>
         </Panel>
 
