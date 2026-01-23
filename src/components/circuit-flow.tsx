@@ -128,7 +128,7 @@ function CircuitFlowInner() {
     const flow = toObject();
     const circuitFile = serializeCircuitFile(flow);
     const json = JSON.stringify(circuitFile, null, 2);
-    const filename = `diagram-${Date.now()}.circuit`;
+    const filename = `diagram-${Date.now()}.flowjx`;
 
     downloadTextFile({
       filename,
@@ -253,7 +253,7 @@ function CircuitFlowInner() {
             <input
               ref={fileInputRef}
               type="file"
-              accept=".circuit,application/json"
+              accept=".flowjx,application/json"
               onChange={handleImport}
               style={{ display: "none" }}
             />
