@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect } from "react";
-import { MenuIcon } from "lucide-react";
+import { ToolCaseIcon } from "lucide-react";
 import {
   ReactFlow,
   Panel,
@@ -137,8 +137,11 @@ export function CircuitFlow() {
                 const ledCathodeKey = `${nodeId}:cathode`;
 
                 // Check if both anode and cathode are connected
-                const anodeConnected = graph.has(ledAnodeKey) && graph.get(ledAnodeKey)!.length > 0;
-                const cathodeConnected = graph.has(ledCathodeKey) && graph.get(ledCathodeKey)!.length > 0;
+                const anodeConnected =
+                  graph.has(ledAnodeKey) && graph.get(ledAnodeKey)!.length > 0;
+                const cathodeConnected =
+                  graph.has(ledCathodeKey) &&
+                  graph.get(ledCathodeKey)!.length > 0;
 
                 if (anodeConnected && cathodeConnected) {
                   poweredLeds.add(nodeId);
@@ -320,12 +323,12 @@ export function CircuitFlow() {
         <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
         <Controls />
 
-        {/* Equipment Sheet - Center Left */}
-        <Panel position="center-left">
+        {/* Equipment Sheet - Top Left */}
+        <Panel position="top-left">
           <Sheet open={isPanelOpen} onOpenChange={setIsPanelOpen}>
             <SheetTrigger asChild>
               <Button className="shadow-lg" size="icon-lg" variant="secondary">
-                <MenuIcon />
+                <ToolCaseIcon />
               </Button>
             </SheetTrigger>
             <SheetContent side="left">
