@@ -66,6 +66,7 @@ export type BatteryData = {
 export type LedData = {
   label: string;
   isPowered: boolean;
+  color?: string;
 };
 
 export type ButtonData = {
