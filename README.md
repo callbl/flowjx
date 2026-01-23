@@ -1,75 +1,107 @@
-# React + TypeScript + Vite
+# FlowJX
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An interactive circuit simulator built with React and ReactFlow. Design and simulate electronic circuits in a visual, node-based interface.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Visual Circuit Editor**: Drag-and-drop interface for building circuits
+- **Real-time Simulation**: Circuits simulate automatically as you build them
+- **Interactive Components**:
+  - Battery (5V power source)
+  - LED (with proper polarity support)
+  - Button (toggle on/off to control circuit flow)
+- **Circuit Analysis**: Automatic circuit tracing from battery positive to negative terminals
+- **Component Customization**: Edit component properties using node toolbars
+- **Edge Toolbars**: Customize connections between components
 
-## React Compiler
+## Getting Started
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+### Prerequisites
 
-Note: This will impact Vite dev & build performances.
+- Node.js (v18 or higher recommended)
+- npm or yarn
 
-## Expanding the ESLint configuration
+### Installation
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Development
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+Open your browser and navigate to `http://localhost:5173`
+
+### Build
+
+```bash
+npm run build
+```
+
+### Preview Production Build
+
+```bash
+npm run preview
+```
+
+## How to Use
+
+1. Click the toolbox icon in the top-left corner to open the equipment panel
+2. Select a component (Battery, LED, or Button) to add it to the canvas
+3. Drag components to position them
+4. Connect components by dragging from one handle to another
+5. Click on nodes or edges to access toolbars for customization
+6. Interactive buttons can be toggled on/off to open or close the circuit
+7. LEDs will light up when properly powered in a complete circuit
+
+## Tech Stack
+
+- **React 19** - UI framework
+- **TypeScript** - Type safety
+- **Vite** - Build tool and dev server
+- **ReactFlow** (@xyflow/react) - Node-based editor
+- **TailwindCSS** - Styling
+- **Radix UI** - UI components
+- **Lucide React** - Icons
+
+## Project Structure
+
+```
+src/
+├── components/
+│   ├── nodes/          # Component node implementations
+│   │   ├── battery-node.tsx
+│   │   ├── led-node.tsx
+│   │   └── button-node.tsx
+│   ├── ui/             # Reusable UI components
+│   ├── base-node.tsx   # Base node component
+│   ├── base-handle.tsx # Connection handle component
+│   ├── data-edge.tsx   # Custom edge component
+│   └── circuit-flow.tsx # Main circuit editor
+├── App.tsx
+└── main.tsx
+```
+
+## Circuit Simulation
+
+The simulator implements realistic circuit behavior:
+
+- Current flows from battery positive (+) to negative (-) terminals
+- LEDs require correct polarity connection (anode to cathode)
+- Buttons act as switches that can open or close circuits
+- Components are analyzed using graph traversal to detect complete circuits
+- Visual feedback shows which LEDs are powered in real-time
+
+## Development Notes
+
+- React Compiler is enabled for optimized performance
+- ESLint is configured for code quality
+- TypeScript strict mode for type safety
+- Uses React 19 with Fast Refresh for optimal DX
+
+## License
+
+Private project
