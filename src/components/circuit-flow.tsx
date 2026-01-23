@@ -312,15 +312,16 @@ export function CircuitFlow() {
         onConnect={onConnect}
         nodeTypes={nodeTypes}
         fitView
+        snapToGrid
       >
-        <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
+        <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
         <Controls />
 
-        {/* Equipment Sheet - Top Left */}
-        <Panel position="top-left">
+        {/* Equipment Sheet - Center Left */}
+        <Panel position="center-left">
           <Sheet open={isPanelOpen} onOpenChange={setIsPanelOpen}>
             <SheetTrigger asChild>
-              <Button className="shadow-lg" size="icon-lg" variant="ghost">
+              <Button className="shadow-lg" size="icon-lg" variant="secondary">
                 <MenuIcon />
               </Button>
             </SheetTrigger>
@@ -331,12 +332,12 @@ export function CircuitFlow() {
                   Select components to add to your circuit
                 </SheetDescription>
               </SheetHeader>
-              <div className="grid grid-cols-2 gap-3 mt-6">
+              <div className="p-4 grid grid-cols-2 gap-3 mt-6">
                 {equipmentItems.map((item) => (
                   <button
                     key={item.type}
                     onClick={() => addNode(item.type)}
-                    className="flex flex-col items-center gap-2 p-4 border-2 border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors"
+                    className="flex flex-col items-center gap-2 p-4 border-1 border-primary/5 rounded-lg hover:border-primary hover:bg-primary/5 transition-colors"
                   >
                     <span className="text-4xl">{item.icon}</span>
                     <span className="font-medium text-sm">{item.label}</span>
