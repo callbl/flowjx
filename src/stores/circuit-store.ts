@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { devtools } from "zustand/middleware";
+import { devtools, persist } from "zustand/middleware";
 import {
   type Node,
   type Edge,
@@ -58,6 +58,9 @@ interface CircuitState {
 
   // UI Actions
   setPanelOpen: (open: boolean) => void;
+
+  // Debug Actions
+  logConnections: () => void;
 }
 
 const equipmentItems: Array<{
@@ -72,7 +75,8 @@ const equipmentItems: Array<{
 
 export const useCircuitStore = create<CircuitState>()(
   devtools(
-    (set, get) => ({
+    persist(
+      (set, get) => ({
       // Initial State
       nodes: [],
       edges: [],
@@ -334,7 +338,39 @@ export const useCircuitStore = create<CircuitState>()(
       setPanelOpen: (open: boolean) => {
         set({ isPanelOpen: open });
       },
+
+      // Debug Actions
+      logConnections: () => {
+        const { edges, nodes } = get();
+
+        const connectionsData = {
+          nodes: nodes.map((node) => ({
+            id: node.id,
+            type: node.type,
+            position: node.position,
+            data: node.data,
+          })),
+          connections: edges.map((edge) => ({
+            id: edge.id,
+            source: edge.source,
+            sourceHandle: edge.sourceHandle,
+            target: edge.target,
+            targetHandle: edge.targetHandle,
+            data: edge.data,
+          })),
+        };
+
+        console.info("Circuit Connections:", JSON.stringify(connectionsData, null, 2));
+      },
     }),
+      {
+        name: "circuit-storage",
+        partialize: (state) => ({
+          nodes: state.nodes,
+          edges: state.edges,
+        }),
+      }
+    ),
     { name: "CircuitStore" }
   )
 );

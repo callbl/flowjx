@@ -49,6 +49,7 @@ export const useCircuitActions = () =>
       updateEdgeData: state.updateEdgeData,
       toggleButton: state.toggleButton,
       runSimulation: state.runSimulation,
+      logConnections: state.logConnections,
     }))
   );
 
