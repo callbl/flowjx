@@ -1,5 +1,5 @@
 import { useCircuitStore } from "@/stores/circuit-store";
-import { shallow } from "zustand/shallow";
+import { useShallow } from "zustand/react/shallow";
 
 /**
  * Hook to get all nodes from the circuit store.
@@ -25,11 +25,13 @@ export const useNode = (nodeId: string) =>
  * Returns undefined if node is not found.
  * Use this for more granular subscriptions to prevent re-renders.
  */
-export const useNodeData = <T>(nodeId: string) =>
-  useCircuitStore((state) => {
-    const node = state.nodes.find((n) => n.id === nodeId);
-    return node?.data as T | undefined;
-  }, shallow);
+export const useNodeData = <T,>(nodeId: string) =>
+  useCircuitStore(
+    useShallow((state) => {
+      const node = state.nodes.find((n) => n.id === nodeId);
+      return node?.data as T | undefined;
+    })
+  );
 
 /**
  * Hook to get all circuit actions (node and edge management).
@@ -37,7 +39,7 @@ export const useNodeData = <T>(nodeId: string) =>
  */
 export const useCircuitActions = () =>
   useCircuitStore(
-    (state) => ({
+    useShallow((state) => ({
       addNode: state.addNode,
       deleteNode: state.deleteNode,
       duplicateNode: state.duplicateNode,
@@ -47,8 +49,7 @@ export const useCircuitActions = () =>
       updateEdgeData: state.updateEdgeData,
       toggleButton: state.toggleButton,
       runSimulation: state.runSimulation,
-    }),
-    shallow
+    }))
   );
 
 /**
@@ -57,12 +58,11 @@ export const useCircuitActions = () =>
  */
 export const useReactFlowCallbacks = () =>
   useCircuitStore(
-    (state) => ({
+    useShallow((state) => ({
       onNodesChange: state.onNodesChange,
       onEdgesChange: state.onEdgesChange,
       onConnect: state.onConnect,
-    }),
-    shallow
+    }))
   );
 
 /**

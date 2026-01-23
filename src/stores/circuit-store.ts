@@ -296,10 +296,7 @@ export const useCircuitStore = create<CircuitState>()(
         // Run simulation after node changes (position, selection, etc.)
         // Note: We only simulate if it's a relevant change
         const hasRelevantChange = changes.some(
-          (change) =>
-            change.type === "add" ||
-            change.type === "remove" ||
-            change.type === "reset"
+          (change) => change.type === "add" || change.type === "remove"
         );
 
         if (hasRelevantChange) {
@@ -314,10 +311,7 @@ export const useCircuitStore = create<CircuitState>()(
 
         // Run simulation after edge changes
         const hasRelevantChange = changes.some(
-          (change) =>
-            change.type === "add" ||
-            change.type === "remove" ||
-            change.type === "reset"
+          (change) => change.type === "add" || change.type === "remove"
         );
 
         if (hasRelevantChange) {
