@@ -8,12 +8,12 @@ import {
   getStraightPath,
   Position,
   useStore,
-  useReactFlow,
   type Edge,
   type EdgeProps,
   type Node,
 } from "@xyflow/react";
 import { Button } from "./ui/button";
+import { useCircuitActions } from "@/hooks/use-circuit";
 
 // Define color options that work well in both light and dark modes
 const EDGE_COLORS = [
@@ -61,7 +61,7 @@ export function DataEdge({
   targetX,
   targetY,
 }: EdgeProps<DataEdge>) {
-  const { setEdges } = useReactFlow();
+  const { deleteEdge, updateEdgeData } = useCircuitActions();
   const nodeData = useStore((state) => state.nodeLookup.get(source)?.data);
   const [edgePath, labelX, labelY] = getPath({
     type: data.path || "bezier",
@@ -92,24 +92,11 @@ export function DataEdge({
   }, [data, nodeData]);
 
   const handleDelete = () => {
-    setEdges((edges) => edges.filter((edge) => edge.id !== id));
+    deleteEdge(id);
   };
 
   const handleColorChange = (color: string) => {
-    setEdges((edges) =>
-      edges.map((edge) => {
-        if (edge.id === id) {
-          return {
-            ...edge,
-            data: {
-              ...edge.data,
-              color,
-            },
-          };
-        }
-        return edge;
-      }),
-    );
+    updateEdgeData(id, { color });
   };
 
   const labelTransform = `translate(${labelX}px,${labelY}px) translate(-50%, -50%)`;
