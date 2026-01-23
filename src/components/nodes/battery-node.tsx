@@ -1,9 +1,12 @@
 import { Handle, Position } from "@xyflow/react";
+import type { BatteryData } from "../circuit-flow";
 
-export function BatteryNode({ data }: { data: { label: string } }) {
+export function BatteryNode({ data }: { data: BatteryData }) {
   return (
     <div className="px-4 py-3 rounded-lg border-2 border-gray-700 bg-white shadow-md min-w-[120px]">
-      <div className="font-semibold text-sm mb-2">{data.label}</div>
+      <div className="font-semibold text-sm mb-2">
+        {data.label} ({data.voltage}V)
+      </div>
       <div className="flex justify-center gap-2 mb-2">
         <div className="flex flex-col items-center">
           <div className="w-6 h-10 bg-gray-700 rounded-sm border-2 border-gray-800" />
