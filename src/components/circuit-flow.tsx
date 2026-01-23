@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { DownloadIcon, ToolCaseIcon, UploadIcon } from "lucide-react";
 import {
   ReactFlow,
+  ReactFlowProvider,
   Panel,
   Background,
   Controls,
@@ -264,5 +265,9 @@ function CircuitFlowInner() {
 
 // Wrapper component that provides ReactFlowProvider context
 export function CircuitFlow() {
-  return <CircuitFlowInner />;
+  return (
+    <ReactFlowProvider>
+      <CircuitFlowInner />
+    </ReactFlowProvider>
+  );
 }
