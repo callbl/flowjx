@@ -1,4 +1,4 @@
-import { ToolCaseIcon } from "lucide-react";
+import { InfoIcon, ToolCaseIcon } from "lucide-react";
 import {
   ReactFlow,
   Panel,
@@ -75,7 +75,7 @@ export function CircuitFlow() {
   const { onNodesChange, onEdgesChange, onConnect } = useReactFlowCallbacks();
   const isPanelOpen = useIsPanelOpen();
   const setPanelOpen = useSetPanelOpen();
-  const { addNode } = useCircuitActions();
+  const { addNode, logConnections } = useCircuitActions();
 
   return (
     <div className="h-screen w-screen">
@@ -91,6 +91,19 @@ export function CircuitFlow() {
       >
         <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
         <Controls />
+
+        {/* Debug Info - Top Right */}
+        <Panel position="top-right">
+          <Button
+            className="shadow-lg"
+            size="icon"
+            variant="secondary"
+            onClick={logConnections}
+            title="Log connections to console"
+          >
+            <InfoIcon />
+          </Button>
+        </Panel>
 
         {/* Equipment Sheet - Top Left */}
         <Panel position="top-left">
