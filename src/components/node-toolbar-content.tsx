@@ -1,36 +1,21 @@
 import { Copy, Trash2 } from "lucide-react";
-import { NodeToolbar, Position, useReactFlow, type Node } from "@xyflow/react";
+import { NodeToolbar, Position } from "@xyflow/react";
 import { Button } from "./ui/button";
+import { useCircuitActions } from "@/hooks/use-circuit";
 
 type NodeToolbarContentProps = {
   nodeId: string;
 };
 
 export function NodeToolbarContent({ nodeId }: NodeToolbarContentProps) {
-  const { getNode, setNodes, setEdges } = useReactFlow();
+  const { deleteNode, duplicateNode } = useCircuitActions();
 
   const handleDelete = () => {
-    setNodes((nds) => nds.filter((node) => node.id !== nodeId));
-    setEdges((eds) =>
-      eds.filter((edge) => edge.source !== nodeId && edge.target !== nodeId)
-    );
+    deleteNode(nodeId);
   };
 
   const handleDuplicate = () => {
-    const node = getNode(nodeId);
-    if (!node) return;
-
-    const newNode: Node = {
-      ...node,
-      id: crypto.randomUUID(),
-      position: {
-        x: node.position.x + 50,
-        y: node.position.y + 50,
-      },
-      selected: false,
-    };
-
-    setNodes((nds) => [...nds, newNode]);
+    duplicateNode(nodeId);
   };
 
   return (
