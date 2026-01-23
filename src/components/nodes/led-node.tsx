@@ -5,17 +5,28 @@ import { NodeToolbarContent } from "../node-toolbar-content";
 
 export function LedNode({ id, data, selected }: NodeProps<Node<LedData>>) {
   const isPowered = data.isPowered || false;
+  const color = data.color || "#ef4444"; // Default to red
 
   return (
     <>
       {selected && <NodeToolbarContent nodeId={id} />}
-      <div className="px-4 py-3 rounded-lg border-2 border-red-300 bg-white shadow-md min-w-[100px] relative">
+      <div
+        className="px-4 py-3 rounded-lg border-2 bg-white shadow-md min-w-[100px] relative"
+        style={{
+          borderColor: color,
+          opacity: 0.5,
+        }}
+      >
         <div className="font-semibold text-sm mb-2">{data.label}</div>
         <div className="flex justify-center mb-2">
           <div
-            className={`size-12 rounded-full border-4 transition-all border-red-400 duration-300 ${
-              isPowered ? "bg-red-400 shadow-lg" : "border-red-400 bg-red-100"
+            className={`size-12 rounded-full border-4 transition-all duration-300 ${
+              isPowered ? "shadow-lg" : ""
             }`}
+            style={{
+              borderColor: color,
+              backgroundColor: isPowered ? color : `${color}20`,
+            }}
           />
         </div>
         {/* Polarity indicators */}
