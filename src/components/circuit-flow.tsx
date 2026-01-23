@@ -1,4 +1,5 @@
-import { InfoIcon, ToolCaseIcon } from "lucide-react";
+import { useEffect } from "react";
+import { ToolCaseIcon } from "lucide-react";
 import {
   ReactFlow,
   Panel,
@@ -77,6 +78,15 @@ export function CircuitFlow() {
   const setPanelOpen = useSetPanelOpen();
   const { addNode, logConnections } = useCircuitActions();
 
+  // Auto-log connections every 10 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      logConnections();
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [logConnections]);
+
   return (
     <div className="h-screen w-screen">
       <ReactFlow
@@ -91,19 +101,6 @@ export function CircuitFlow() {
       >
         <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
         <Controls />
-
-        {/* Debug Info - Top Right */}
-        <Panel position="top-right">
-          <Button
-            className="shadow-lg"
-            size="icon"
-            variant="secondary"
-            onClick={logConnections}
-            title="Log connections to console"
-          >
-            <InfoIcon />
-          </Button>
-        </Panel>
 
         {/* Equipment Sheet - Top Left */}
         <Panel position="top-left">
