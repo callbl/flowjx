@@ -324,7 +324,6 @@ export function CircuitFlow() {
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         fitView
-        snapToGrid
       >
         <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
         <Controls />
@@ -333,7 +332,7 @@ export function CircuitFlow() {
         <Panel position="top-left">
           <Sheet open={isPanelOpen} onOpenChange={setIsPanelOpen}>
             <SheetTrigger asChild>
-              <Button className="shadow-lg" size="icon-lg" variant="secondary">
+              <Button className="shadow-lg" size="icon" variant="secondary">
                 <ToolCaseIcon />
               </Button>
             </SheetTrigger>
