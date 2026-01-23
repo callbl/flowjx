@@ -158,10 +158,17 @@ export const useCircuitStore = create<CircuitState>()(
             x: nodeToDuplicate.position.x + 50,
             y: nodeToDuplicate.position.y + 50,
           },
+          selected: true, // Select the new duplicate
         };
 
+        // Deselect all other nodes (including the original)
+        const updatedNodes = nodes.map((node) => ({
+          ...node,
+          selected: false,
+        }));
+
         set({
-          nodes: [...nodes, newNode],
+          nodes: [...updatedNodes, newNode],
         });
 
         // Run simulation after duplication
