@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect } from "react";
-import { MenuIcon, XIcon } from "lucide-react";
+import { MenuIcon } from "lucide-react";
 import {
   ReactFlow,
   Panel,
@@ -19,6 +19,14 @@ import { BatteryNode } from "./nodes/battery-node";
 import { LedNode } from "./nodes/led-node";
 import { ButtonNode } from "./nodes/button-node";
 import { Button } from "./ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "./ui/sheet";
 
 const nodeTypes = {
   battery: BatteryNode,
@@ -308,39 +316,35 @@ export function CircuitFlow() {
         <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
         <Controls />
 
-        {/* Toggle Button - Top Left */}
+        {/* Equipment Sheet - Top Left */}
         <Panel position="top-left">
-          <Button
-            onClick={() => setIsPanelOpen(!isPanelOpen)}
-            className="shadow-lg"
-            size="icon-lg"
-          >
-            {isPanelOpen ? <XIcon /> : <MenuIcon />}
-          </Button>
-        </Panel>
-
-        {/* Equipment Palette - Center Left */}
-        <Panel position="center-left">
-          <div
-            className={`bg-white rounded-lg shadow-xl border border-gray-200 p-4 transition-transform duration-300 ${
-              isPanelOpen ? "translate-x-0" : "-translate-x-full"
-            }`}
-            style={{ minWidth: "200px" }}
-          >
-            <h3 className="font-semibold text-lg mb-4">Equipment</h3>
-            <div className="space-y-2">
-              {equipmentItems.map((item) => (
-                <button
-                  key={item.type}
-                  onClick={() => addNode(item.type)}
-                  className="w-full px-4 py-3 text-left border-2 border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors flex items-center gap-3"
-                >
-                  <span className="text-2xl">{item.icon}</span>
-                  <span className="font-medium">{item.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+          <Sheet open={isPanelOpen} onOpenChange={setIsPanelOpen}>
+            <SheetTrigger asChild>
+              <Button className="shadow-lg" size="icon-lg" variant="ghost">
+                <MenuIcon />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left">
+              <SheetHeader>
+                <SheetTitle>Equipment</SheetTitle>
+                <SheetDescription>
+                  Select components to add to your circuit
+                </SheetDescription>
+              </SheetHeader>
+              <div className="grid grid-cols-2 gap-3 mt-6">
+                {equipmentItems.map((item) => (
+                  <button
+                    key={item.type}
+                    onClick={() => addNode(item.type)}
+                    className="flex flex-col items-center gap-2 p-4 border-2 border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors"
+                  >
+                    <span className="text-4xl">{item.icon}</span>
+                    <span className="font-medium text-sm">{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            </SheetContent>
+          </Sheet>
         </Panel>
       </ReactFlow>
     </div>
