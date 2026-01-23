@@ -78,7 +78,7 @@ export function CircuitFlow() {
 
   const simulateCircuit = useCallback(
     (currentNodes: Node[], currentEdges: Edge[]) => {
-      // Build adjacency list from edges
+      // Build adjacency list from edges - bidirectional graph
       const graph = new Map<
         string,
         Array<{ nodeId: string; handleId: string }>
@@ -128,11 +128,21 @@ export function CircuitFlow() {
 
           // Check if we reached battery negative terminal - complete circuit!
           if (current.nodeId === battery.id && current.handleId === "minus") {
-            // Mark all LEDs in this path as powered
+            // Mark all LEDs in this path as powered (only if properly connected)
             current.path.forEach((nodeId) => {
               const node = currentNodes.find((n) => n.id === nodeId);
               if (node?.type === "led") {
-                poweredLeds.add(nodeId);
+                // Verify LED is connected with correct polarity
+                const ledAnodeKey = `${nodeId}:anode`;
+                const ledCathodeKey = `${nodeId}:cathode`;
+
+                // Check if both anode and cathode are connected
+                const anodeConnected = graph.has(ledAnodeKey) && graph.get(ledAnodeKey)!.length > 0;
+                const cathodeConnected = graph.has(ledCathodeKey) && graph.get(ledCathodeKey)!.length > 0;
+
+                if (anodeConnected && cathodeConnected) {
+                  poweredLeds.add(nodeId);
+                }
               }
             });
             continue;
@@ -142,15 +152,7 @@ export function CircuitFlow() {
           const currentNode = currentNodes.find((n) => n.id === current.nodeId);
           if (!currentNode) continue;
 
-          // If it's a button and it's open, don't continue this path
-          if (
-            currentNode.type === "button" &&
-            !(currentNode.data as ButtonData).isClosed
-          ) {
-            continue;
-          }
-
-          // Explore neighbors
+          // First, explore direct neighbors from this handle
           const neighbors = graph.get(key) || [];
           neighbors.forEach((neighbor) => {
             const neighborKey = `${neighbor.nodeId}:${neighbor.handleId}`;
@@ -163,44 +165,45 @@ export function CircuitFlow() {
             }
           });
 
-          // For LEDs, also check the other handle
+          // Then handle internal component connections
           if (currentNode.type === "led") {
-            const otherHandle =
-              current.handleId === "anode" ? "cathode" : "anode";
-            const otherKey = `${current.nodeId}:${otherHandle}`;
-            const otherNeighbors = graph.get(otherKey) || [];
+            // LED: Current flows anode → cathode only
+            if (current.handleId === "anode") {
+              // Can flow through to cathode
+              const cathodeKey = `${current.nodeId}:cathode`;
+              const cathodeNeighbors = graph.get(cathodeKey) || [];
 
-            otherNeighbors.forEach((neighbor) => {
-              const neighborKey = `${neighbor.nodeId}:${neighbor.handleId}`;
-              if (!visited.has(neighborKey)) {
-                queue.push({
-                  nodeId: neighbor.nodeId,
-                  handleId: neighbor.handleId,
-                  path: current.path,
-                });
-              }
-            });
-          }
+              cathodeNeighbors.forEach((neighbor) => {
+                const neighborKey = `${neighbor.nodeId}:${neighbor.handleId}`;
+                if (!visited.has(neighborKey)) {
+                  queue.push({
+                    nodeId: neighbor.nodeId,
+                    handleId: neighbor.handleId,
+                    path: current.path, // Don't add LED again to path
+                  });
+                }
+              });
+            }
+            // If at cathode, don't allow flow back to anode (wrong direction)
+          } else if (currentNode.type === "button") {
+            // Button: Only conducts when closed, bidirectional
+            if ((currentNode.data as ButtonData).isClosed) {
+              const otherHandle = current.handleId === "in" ? "out" : "in";
+              const otherKey = `${current.nodeId}:${otherHandle}`;
+              const otherNeighbors = graph.get(otherKey) || [];
 
-          // For buttons, check the other handle (in/out)
-          if (
-            currentNode.type === "button" &&
-            (currentNode.data as ButtonData).isClosed
-          ) {
-            const otherHandle = current.handleId === "in" ? "out" : "in";
-            const otherKey = `${current.nodeId}:${otherHandle}`;
-            const otherNeighbors = graph.get(otherKey) || [];
-
-            otherNeighbors.forEach((neighbor) => {
-              const neighborKey = `${neighbor.nodeId}:${neighbor.handleId}`;
-              if (!visited.has(neighborKey)) {
-                queue.push({
-                  nodeId: neighbor.nodeId,
-                  handleId: neighbor.handleId,
-                  path: current.path,
-                });
-              }
-            });
+              otherNeighbors.forEach((neighbor) => {
+                const neighborKey = `${neighbor.nodeId}:${neighbor.handleId}`;
+                if (!visited.has(neighborKey)) {
+                  queue.push({
+                    nodeId: neighbor.nodeId,
+                    handleId: neighbor.handleId,
+                    path: current.path,
+                  });
+                }
+              });
+            }
+            // If button is open, it blocks current flow (already handled by not exploring)
           }
         }
       });
