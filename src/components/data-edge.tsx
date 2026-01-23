@@ -51,7 +51,7 @@ export function DataEdge({
   const { setEdges } = useReactFlow();
   const nodeData = useStore((state) => state.nodeLookup.get(source)?.data);
   const [edgePath, labelX, labelY] = getPath({
-    type: data.path ?? "bezier",
+    type: data.path || "bezier",
     sourceX,
     sourceY,
     sourcePosition,
@@ -82,7 +82,8 @@ export function DataEdge({
     setEdges((edges) => edges.filter((edge) => edge.id !== id));
   };
 
-  const transform = `translate(${labelX}px,${labelY}px) translate(-50%, -50%)`;
+  const labelTransform = `translate(${labelX}px,${labelY}px) translate(-50%, -50%)`;
+  const toolbarTransform = `translate(${labelX}px,${labelY - 30}px) translate(-50%, -50%)`;
 
   return (
     <>
@@ -91,23 +92,28 @@ export function DataEdge({
         {data.key && (
           <div
             className="absolute rounded border bg-background px-1 text-foreground"
-            style={{ transform }}
+            style={{ transform: labelTransform }}
           >
             <pre className="text-xs">{label}</pre>
           </div>
         )}
         {selected && (
           <div
-            className="absolute flex gap-1 bg-background border rounded-md shadow-lg p-1"
-            style={{ transform }}
+            className="absolute flex gap-1 bg-background border rounded-lg shadow-lg p-1 nopan"
+            style={{
+              transform: toolbarTransform,
+              pointerEvents: "all",
+              zIndex: 1000,
+            }}
           >
             <Button
               variant="ghost"
-              size="icon-sm"
+              size="icon"
               onClick={handleDelete}
               title="Delete Edge"
+              className="cursor-pointer"
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              <Trash2 className="size-4" />
             </Button>
           </div>
         )}
