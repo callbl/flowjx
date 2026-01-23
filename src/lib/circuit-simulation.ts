@@ -1,5 +1,5 @@
 import type { Node, Edge } from "@xyflow/react";
-import type { BatteryData, LedData, ButtonData } from "@/components/circuit-flow";
+import type { LedData, ButtonData } from "@/components/circuit-flow";
 
 /**
  * Pure circuit simulation function using BFS graph traversal.
