@@ -16,9 +16,10 @@ import type {
   BatteryData,
   LedData,
   ButtonData,
+  ArduinoUnoData,
 } from "@/components/circuit-flow";
 
-export type EquipmentType = "battery" | "led" | "button";
+export type EquipmentType = "battery" | "led" | "button" | "arduinoUno";
 
 export type EdgeData = {
   color?: string;
@@ -71,6 +72,7 @@ const equipmentItems: Array<{
   { type: "battery", label: "Battery", icon: "🔋" },
   { type: "led", label: "LED", icon: "💡" },
   { type: "button", label: "Button", icon: "🔘" },
+  { type: "arduinoUno", label: "Arduino Uno", icon: "🎛️" },
 ];
 
 export const useCircuitStore = create<CircuitState>()(
@@ -97,7 +99,7 @@ export const useCircuitStore = create<CircuitState>()(
           };
 
           // Create node data based on type
-          let data: BatteryData | LedData | ButtonData;
+          let data: BatteryData | LedData | ButtonData | ArduinoUnoData;
 
           switch (type) {
             case "battery":
@@ -111,6 +113,9 @@ export const useCircuitStore = create<CircuitState>()(
                 label,
                 isClosed: false,
               };
+              break;
+            case "arduinoUno":
+              data = { label };
               break;
           }
 

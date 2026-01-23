@@ -14,6 +14,7 @@ import "@xyflow/react/dist/style.css";
 import { BatteryNode } from "./nodes/battery-node";
 import { LedNode } from "./nodes/led-node";
 import { ButtonNode } from "./nodes/button-node";
+import { ArduinoUnoNode } from "./nodes/arduino-uno-node";
 import { DataEdge } from "./data-edge";
 import { Button } from "./ui/button";
 import {
@@ -51,6 +52,7 @@ const nodeTypes = {
   battery: BatteryNode,
   led: LedNode,
   button: ButtonNode,
+  arduinoUno: ArduinoUnoNode,
 };
 
 const edgeTypes = {
@@ -74,7 +76,11 @@ export type ButtonData = {
   isClosed: boolean;
 };
 
-type EquipmentType = "battery" | "led" | "button";
+export type ArduinoUnoData = {
+  label: string;
+};
+
+type EquipmentType = "battery" | "led" | "button" | "arduinoUno";
 
 const equipmentItems: Array<{
   type: EquipmentType;
@@ -84,6 +90,7 @@ const equipmentItems: Array<{
   { type: "battery", label: "Battery", icon: "🔋" },
   { type: "led", label: "LED", icon: "💡" },
   { type: "button", label: "Button", icon: "🔘" },
+  { type: "arduinoUno", label: "Arduino Uno", icon: "🎛️" },
 ];
 
 function CircuitFlowInner() {
