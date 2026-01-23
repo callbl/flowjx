@@ -1,4 +1,5 @@
 import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
+import { PlusIcon, MinusIcon } from "lucide-react";
 import type { BatteryData } from "../circuit-flow";
 import { NodeToolbarContent } from "../node-toolbar-content";
 
@@ -6,7 +7,7 @@ export function BatteryNode({ id, data, selected }: NodeProps<Node<BatteryData>>
   return (
     <>
       {selected && <NodeToolbarContent nodeId={id} />}
-      <div className="px-4 py-3 rounded-lg border-2 border-gray-700 bg-white shadow-md min-w-[120px]">
+      <div className="px-4 py-3 rounded-lg border-2 border-gray-700 bg-white shadow-md min-w-[120px] relative">
         <div className="font-semibold text-sm mb-2">
           {data.label} ({data.voltage}V)
         </div>
@@ -20,21 +21,24 @@ export function BatteryNode({ id, data, selected }: NodeProps<Node<BatteryData>>
             <div className="text-xs text-green-500 font-bold mt-1">+</div>
           </div>
         </div>
+        {/* Polarity indicators on handles */}
+        <PlusIcon className="absolute right-2 top-[35%] translate-y-[-50%] translate-x-[50%] size-2 text-green-500" />
+        <MinusIcon className="absolute right-2 top-[65%] translate-y-[-50%] translate-x-[50%] size-2 text-gray-800" />
         {/* Plus handle */}
         <Handle
           type="source"
           position={Position.Right}
           id="plus"
-          style={{ top: "35%", background: "#22c55e" }}
-          className="w-3 h-3"
+          style={{ top: "35%" }}
+          className="size-2"
         />
         {/* Minus handle */}
         <Handle
           type="source"
           position={Position.Right}
           id="minus"
-          style={{ top: "65%", background: "#ef4444" }}
-          className="w-3 h-3"
+          style={{ top: "65%" }}
+          className="size-2"
         />
       </div>
     </>
