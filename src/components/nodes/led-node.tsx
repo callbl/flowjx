@@ -14,7 +14,6 @@ export function LedNode({ id, data, selected }: NodeProps<Node<LedData>>) {
         className="px-4 py-3 rounded-lg border-2 bg-white shadow-md min-w-[100px] relative"
         style={{
           borderColor: color,
-          opacity: 0.5,
         }}
       >
         <div className="font-semibold text-sm mb-2">{data.label}</div>
