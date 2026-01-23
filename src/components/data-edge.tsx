@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { Trash2 } from "lucide-react";
 import {
   BaseEdge,
   EdgeLabelRenderer,
@@ -7,10 +8,12 @@ import {
   getStraightPath,
   Position,
   useStore,
+  useReactFlow,
   type Edge,
   type EdgeProps,
   type Node,
 } from "@xyflow/react";
+import { Button } from "./ui/button";
 
 export type DataEdge<T extends Node = Node> = Edge<{
   /**
@@ -35,6 +38,7 @@ export function DataEdge({
   data = { path: "bezier" },
   id,
   markerEnd,
+  selected,
   source,
   sourcePosition,
   sourceX,
@@ -44,6 +48,7 @@ export function DataEdge({
   targetX,
   targetY,
 }: EdgeProps<DataEdge>) {
+  const { setEdges } = useReactFlow();
   const nodeData = useStore((state) => state.nodeLookup.get(source)?.data);
   const [edgePath, labelX, labelY] = getPath({
     type: data.path ?? "bezier",
@@ -73,21 +78,40 @@ export function DataEdge({
     }
   }, [data, nodeData]);
 
+  const handleDelete = () => {
+    setEdges((edges) => edges.filter((edge) => edge.id !== id));
+  };
+
   const transform = `translate(${labelX}px,${labelY}px) translate(-50%, -50%)`;
 
   return (
     <>
       <BaseEdge id={id} path={edgePath} markerEnd={markerEnd} style={style} />
-      {data.key && (
-        <EdgeLabelRenderer>
+      <EdgeLabelRenderer>
+        {data.key && (
           <div
             className="absolute rounded border bg-background px-1 text-foreground"
             style={{ transform }}
           >
             <pre className="text-xs">{label}</pre>
           </div>
-        </EdgeLabelRenderer>
-      )}
+        )}
+        {selected && (
+          <div
+            className="absolute flex gap-1 bg-background border rounded-md shadow-lg p-1"
+            style={{ transform }}
+          >
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={handleDelete}
+              title="Delete Edge"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        )}
+      </EdgeLabelRenderer>
     </>
   );
 }

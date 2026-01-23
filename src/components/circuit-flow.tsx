@@ -18,6 +18,7 @@ import "@xyflow/react/dist/style.css";
 import { BatteryNode } from "./nodes/battery-node";
 import { LedNode } from "./nodes/led-node";
 import { ButtonNode } from "./nodes/button-node";
+import { DataEdge } from "./data-edge";
 import { Button } from "./ui/button";
 import {
   Sheet,
@@ -32,6 +33,10 @@ const nodeTypes = {
   battery: BatteryNode,
   led: LedNode,
   button: ButtonNode,
+};
+
+const edgeTypes = {
+  default: DataEdge,
 };
 
 const initialNodes: Node[] = [];
@@ -317,6 +322,7 @@ export function CircuitFlow() {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         fitView
         snapToGrid
       >
