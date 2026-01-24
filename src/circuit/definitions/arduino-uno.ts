@@ -19,16 +19,23 @@ export interface ArduinoUnoData {
  */
 export const arduinoUnoElectrical: ElectricalDefinition<ArduinoUnoData> = {
   internalEdges: (nodeId: string, _data: ArduinoUnoData): InternalEdge[] => {
-    // One-way flow: 5V → GND1 and 5V → GND2
+    // Internal power distribution (one-way, from power sources to GND)
+    // Mimics real Arduino regulator: VIN feeds 5V/3.3V outputs, all connect to GND rails
     return [
-      {
-        from: { nodeId, handleId: "5v" },
-        to: { nodeId, handleId: "gnd1" },
-      },
-      {
-        from: { nodeId, handleId: "5v" },
-        to: { nodeId, handleId: "gnd2" },
-      },
+      // VIN → all power rails and grounds
+      { from: { nodeId, handleId: "vin" }, to: { nodeId, handleId: "5v" } },
+      { from: { nodeId, handleId: "vin" }, to: { nodeId, handleId: "3v3" } },
+      { from: { nodeId, handleId: "vin" }, to: { nodeId, handleId: "gnd1" } },
+      { from: { nodeId, handleId: "vin" }, to: { nodeId, handleId: "gnd2" } },
+
+      // 5V → 3.3V and grounds
+      { from: { nodeId, handleId: "5v" }, to: { nodeId, handleId: "3v3" } },
+      { from: { nodeId, handleId: "5v" }, to: { nodeId, handleId: "gnd1" } },
+      { from: { nodeId, handleId: "5v" }, to: { nodeId, handleId: "gnd2" } },
+
+      // 3.3V → grounds
+      { from: { nodeId, handleId: "3v3" }, to: { nodeId, handleId: "gnd1" } },
+      { from: { nodeId, handleId: "3v3" }, to: { nodeId, handleId: "gnd2" } },
     ];
   },
 
