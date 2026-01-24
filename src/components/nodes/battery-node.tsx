@@ -1,46 +1,32 @@
-import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
-import { PlusIcon, MinusIcon } from "lucide-react";
+import { type NodeProps, type Node } from "@xyflow/react";
 import type { BatteryData } from "../circuit-flow";
-import { NodeToolbarContent } from "../node-toolbar-content";
+import { BlueprintNode } from "./blueprint-node";
+import { batteryNodeConfig } from "./config";
 
-export function BatteryNode({ id, data, selected }: NodeProps<Node<BatteryData>>) {
+export function BatteryNode(props: NodeProps<Node<BatteryData>>) {
+  const { data } = props;
+
   return (
-    <>
-      {selected && <NodeToolbarContent nodeId={id} />}
-      <div className="px-4 py-3 rounded-lg border-2 border-gray-700 bg-white shadow-md min-w-[120px] relative">
-        <div className="font-semibold text-sm mb-2">
-          {data.label} ({data.voltage}V)
+    <BlueprintNode {...props} config={batteryNodeConfig}>
+      <div className="flex flex-col gap-2">
+        {/* Voltage Display */}
+        <div className="text-center">
+          <div className="text-amber-400 font-bold text-lg">{data.voltage}V</div>
+          <div className="text-gray-400 text-xs">Voltage</div>
         </div>
-        <div className="flex justify-center gap-2 mb-2">
+
+        {/* Battery Visual */}
+        <div className="flex justify-center gap-2 py-2">
           <div className="flex flex-col items-center">
-            <div className="w-6 h-10 bg-gray-700 rounded-sm border-2 border-gray-800" />
-            <div className="text-xs text-red-500 font-bold mt-1">−</div>
+            <div className="w-5 h-8 bg-gray-600 rounded-sm border-2 border-gray-700" />
+            <div className="text-xs text-gray-400 font-medium mt-1">−</div>
           </div>
           <div className="flex flex-col items-center">
-            <div className="w-6 h-12 bg-gray-700 rounded-sm border-2 border-gray-800" />
-            <div className="text-xs text-green-500 font-bold mt-1">+</div>
+            <div className="w-5 h-10 bg-gray-600 rounded-sm border-2 border-gray-700" />
+            <div className="text-xs text-amber-400 font-medium mt-1">+</div>
           </div>
         </div>
-        {/* Polarity indicators on handles */}
-        <PlusIcon className="absolute right-2 top-[35%] translate-y-[-50%] translate-x-[50%] size-2 text-green-500" />
-        <MinusIcon className="absolute right-2 top-[65%] translate-y-[-50%] translate-x-[50%] size-2 text-gray-800" />
-        {/* Plus handle */}
-        <Handle
-          type="source"
-          position={Position.Right}
-          id="plus"
-          style={{ top: "35%" }}
-          className="size-2"
-        />
-        {/* Minus handle */}
-        <Handle
-          type="source"
-          position={Position.Right}
-          id="minus"
-          style={{ top: "65%" }}
-          className="size-2"
-        />
       </div>
-    </>
+    </BlueprintNode>
   );
 }
