@@ -17,6 +17,7 @@ export interface HandleConfig {
   label: string;
   dataType: "execution" | "object" | "value" | "boolean" | "vector";
   offsetPercentage?: number; // Percentage from top (0-100)
+  description?: string; // Optional description shown in tooltip
 }
 
 /**
@@ -59,6 +60,7 @@ export const batteryNodeConfig: NodeConfig = {
       label: "+",
       dataType: "value",
       offsetPercentage: 35,
+      description: "Positive terminal - connects to power input",
     },
     {
       id: "minus",
@@ -67,6 +69,7 @@ export const batteryNodeConfig: NodeConfig = {
       label: "−",
       dataType: "value",
       offsetPercentage: 65,
+      description: "Negative terminal - ground reference",
     },
   ],
   width: 180,
@@ -89,6 +92,7 @@ export const ledNodeConfig: NodeConfig = {
       label: "+",
       dataType: "value",
       offsetPercentage: 35,
+      description: "Anode - positive terminal (longer leg)",
     },
     {
       id: "anode",
@@ -97,6 +101,7 @@ export const ledNodeConfig: NodeConfig = {
       label: "+",
       dataType: "value",
       offsetPercentage: 35,
+      description: "Anode - positive terminal (longer leg)",
     },
     {
       id: "cathode",
@@ -105,6 +110,7 @@ export const ledNodeConfig: NodeConfig = {
       label: "-",
       dataType: "value",
       offsetPercentage: 65,
+      description: "Cathode - negative terminal (shorter leg)",
     },
     {
       id: "cathode",
@@ -113,6 +119,7 @@ export const ledNodeConfig: NodeConfig = {
       label: "-",
       dataType: "value",
       offsetPercentage: 65,
+      description: "Cathode - negative terminal (shorter leg)",
     },
   ],
   width: 180,
@@ -135,6 +142,7 @@ export const buttonNodeConfig: NodeConfig = {
       label: "In",
       dataType: "value",
       offsetPercentage: 50,
+      description: "Input connection - receives current",
     },
     {
       id: "out",
@@ -143,6 +151,7 @@ export const buttonNodeConfig: NodeConfig = {
       label: "Out",
       dataType: "value",
       offsetPercentage: 50,
+      description: "Output connection - active when button is pressed",
     },
   ],
   width: 180,
@@ -166,6 +175,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "VIN",
       dataType: "value",
       offsetPercentage: 55,
+      description: "External power input (7-12V recommended)",
     },
     {
       id: "vin",
@@ -174,6 +184,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "VIN",
       dataType: "value",
       offsetPercentage: 55,
+      description: "External power input (7-12V recommended)",
     },
     {
       id: "5v",
@@ -182,6 +193,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "5V",
       dataType: "value",
       offsetPercentage: 40,
+      description: "Regulated 5V power output",
     },
     {
       id: "5v",
@@ -190,6 +202,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "5V",
       dataType: "value",
       offsetPercentage: 40,
+      description: "Regulated 5V power output",
     },
     {
       id: "3v3",
@@ -198,6 +211,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "3.3V",
       dataType: "value",
       offsetPercentage: 35,
+      description: "Regulated 3.3V power output (max 50mA)",
     },
     {
       id: "3v3",
@@ -206,6 +220,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "3.3V",
       dataType: "value",
       offsetPercentage: 35,
+      description: "Regulated 3.3V power output (max 50mA)",
     },
     {
       id: "gnd1",
@@ -214,6 +229,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "GND",
       dataType: "value",
       offsetPercentage: 50,
+      description: "Ground reference - connect to circuit ground",
     },
     {
       id: "gnd1",
@@ -222,6 +238,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "GND",
       dataType: "value",
       offsetPercentage: 50,
+      description: "Ground reference - connect to circuit ground",
     },
     {
       id: "gnd2",
@@ -230,6 +247,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "GND",
       dataType: "value",
       offsetPercentage: 45,
+      description: "Ground reference - connect to circuit ground",
     },
     {
       id: "gnd2",
@@ -238,6 +256,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "GND",
       dataType: "value",
       offsetPercentage: 45,
+      description: "Ground reference - connect to circuit ground",
     },
     {
       id: "reset",
@@ -246,6 +265,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "RST",
       dataType: "value",
       offsetPercentage: 30,
+      description: "Reset the microcontroller (active LOW)",
     },
     {
       id: "reset",
@@ -254,6 +274,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "RST",
       dataType: "value",
       offsetPercentage: 30,
+      description: "Reset the microcontroller (active LOW)",
     },
     {
       id: "aref",
@@ -262,6 +283,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "AREF",
       dataType: "value",
       offsetPercentage: 25,
+      description: "Analog reference voltage for ADC",
     },
     {
       id: "aref",
@@ -270,6 +292,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "AREF",
       dataType: "value",
       offsetPercentage: 25,
+      description: "Analog reference voltage for ADC",
     },
 
     // Analog pins (Left)
@@ -280,6 +303,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "A0",
       dataType: "value",
       offsetPercentage: 65,
+      description: "Analog input 0 (10-bit ADC, 0-5V)",
     },
     {
       id: "a0",
@@ -288,6 +312,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "A0",
       dataType: "value",
       offsetPercentage: 65,
+      description: "Analog input 0 (10-bit ADC, 0-5V)",
     },
     {
       id: "a1",
@@ -296,6 +321,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "A1",
       dataType: "value",
       offsetPercentage: 70,
+      description: "Analog input 1 (10-bit ADC, 0-5V)",
     },
     {
       id: "a1",
@@ -304,6 +330,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "A1",
       dataType: "value",
       offsetPercentage: 70,
+      description: "Analog input 1 (10-bit ADC, 0-5V)",
     },
     {
       id: "a2",
@@ -312,6 +339,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "A2",
       dataType: "value",
       offsetPercentage: 75,
+      description: "Analog input 2 (10-bit ADC, 0-5V)",
     },
     {
       id: "a2",
@@ -320,6 +348,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "A2",
       dataType: "value",
       offsetPercentage: 75,
+      description: "Analog input 2 (10-bit ADC, 0-5V)",
     },
     {
       id: "a3",
@@ -328,6 +357,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "A3",
       dataType: "value",
       offsetPercentage: 80,
+      description: "Analog input 3 (10-bit ADC, 0-5V)",
     },
     {
       id: "a3",
@@ -336,6 +366,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "A3",
       dataType: "value",
       offsetPercentage: 80,
+      description: "Analog input 3 (10-bit ADC, 0-5V)",
     },
     {
       id: "a4",
@@ -344,6 +375,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "A4",
       dataType: "value",
       offsetPercentage: 85,
+      description: "Analog input 4 (10-bit ADC, 0-5V) - also I2C SDA",
     },
     {
       id: "a4",
@@ -352,6 +384,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "A4",
       dataType: "value",
       offsetPercentage: 85,
+      description: "Analog input 4 (10-bit ADC, 0-5V) - also I2C SDA",
     },
     {
       id: "a5",
@@ -360,6 +393,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "A5",
       dataType: "value",
       offsetPercentage: 90,
+      description: "Analog input 5 (10-bit ADC, 0-5V) - also I2C SCL",
     },
     {
       id: "a5",
@@ -368,6 +402,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "A5",
       dataType: "value",
       offsetPercentage: 90,
+      description: "Analog input 5 (10-bit ADC, 0-5V) - also I2C SCL",
     },
 
     // Digital pins (Right side)
@@ -378,6 +413,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D0",
       dataType: "value",
       offsetPercentage: 90,
+      description: "Digital I/O pin 0 - also Serial RX",
     },
     {
       id: "d0",
@@ -386,6 +422,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D0",
       dataType: "value",
       offsetPercentage: 90,
+      description: "Digital I/O pin 0 - also Serial RX",
     },
     {
       id: "d1",
@@ -394,6 +431,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D1",
       dataType: "value",
       offsetPercentage: 85,
+      description: "Digital I/O pin 1 - also Serial TX",
     },
     {
       id: "d1",
@@ -402,6 +440,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D1",
       dataType: "value",
       offsetPercentage: 85,
+      description: "Digital I/O pin 1 - also Serial TX",
     },
     {
       id: "d2",
@@ -410,6 +449,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D2",
       dataType: "value",
       offsetPercentage: 80,
+      description: "Digital I/O pin 2 - supports interrupts",
     },
     {
       id: "d2",
@@ -418,6 +458,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D2",
       dataType: "value",
       offsetPercentage: 80,
+      description: "Digital I/O pin 2 - supports interrupts",
     },
     {
       id: "d3",
@@ -426,6 +467,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D3",
       dataType: "value",
       offsetPercentage: 75,
+      description: "Digital I/O pin 3 - PWM enabled, supports interrupts",
     },
     {
       id: "d3",
@@ -434,6 +476,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D3",
       dataType: "value",
       offsetPercentage: 75,
+      description: "Digital I/O pin 3 - PWM enabled, supports interrupts",
     },
     {
       id: "d4",
@@ -442,6 +485,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D4",
       dataType: "value",
       offsetPercentage: 70,
+      description: "Digital I/O pin 4",
     },
     {
       id: "d4",
@@ -450,6 +494,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D4",
       dataType: "value",
       offsetPercentage: 70,
+      description: "Digital I/O pin 4",
     },
     {
       id: "d5",
@@ -458,6 +503,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D5",
       dataType: "value",
       offsetPercentage: 65,
+      description: "Digital I/O pin 5 - PWM enabled",
     },
     {
       id: "d5",
@@ -466,6 +512,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D5",
       dataType: "value",
       offsetPercentage: 65,
+      description: "Digital I/O pin 5 - PWM enabled",
     },
     {
       id: "d6",
@@ -474,6 +521,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D6",
       dataType: "value",
       offsetPercentage: 60,
+      description: "Digital I/O pin 6 - PWM enabled",
     },
     {
       id: "d6",
@@ -482,6 +530,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D6",
       dataType: "value",
       offsetPercentage: 60,
+      description: "Digital I/O pin 6 - PWM enabled",
     },
     {
       id: "d7",
@@ -490,6 +539,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D7",
       dataType: "value",
       offsetPercentage: 55,
+      description: "Digital I/O pin 7",
     },
     {
       id: "d7",
@@ -498,6 +548,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D7",
       dataType: "value",
       offsetPercentage: 55,
+      description: "Digital I/O pin 7",
     },
     {
       id: "d8",
@@ -506,6 +557,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D8",
       dataType: "value",
       offsetPercentage: 50,
+      description: "Digital I/O pin 8",
     },
     {
       id: "d8",
@@ -514,6 +566,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D8",
       dataType: "value",
       offsetPercentage: 50,
+      description: "Digital I/O pin 8",
     },
     {
       id: "d9",
@@ -522,6 +575,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D9",
       dataType: "value",
       offsetPercentage: 45,
+      description: "Digital I/O pin 9 - PWM enabled",
     },
     {
       id: "d9",
@@ -530,6 +584,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D9",
       dataType: "value",
       offsetPercentage: 45,
+      description: "Digital I/O pin 9 - PWM enabled",
     },
     {
       id: "d10",
@@ -538,6 +593,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D10",
       dataType: "value",
       offsetPercentage: 40,
+      description: "Digital I/O pin 10 - PWM enabled, SPI SS",
     },
     {
       id: "d10",
@@ -546,6 +602,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D10",
       dataType: "value",
       offsetPercentage: 40,
+      description: "Digital I/O pin 10 - PWM enabled, SPI SS",
     },
     {
       id: "d11",
@@ -554,6 +611,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D11",
       dataType: "value",
       offsetPercentage: 35,
+      description: "Digital I/O pin 11 - PWM enabled, SPI MOSI",
     },
     {
       id: "d11",
@@ -562,6 +620,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D11",
       dataType: "value",
       offsetPercentage: 35,
+      description: "Digital I/O pin 11 - PWM enabled, SPI MOSI",
     },
     {
       id: "d12",
@@ -570,6 +629,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D12",
       dataType: "value",
       offsetPercentage: 30,
+      description: "Digital I/O pin 12 - SPI MISO",
     },
     {
       id: "d12",
@@ -578,6 +638,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D12",
       dataType: "value",
       offsetPercentage: 30,
+      description: "Digital I/O pin 12 - SPI MISO",
     },
     {
       id: "d13",
@@ -586,6 +647,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D13",
       dataType: "value",
       offsetPercentage: 25,
+      description: "Digital I/O pin 13 - built-in LED, SPI SCK",
     },
     {
       id: "d13",
@@ -594,6 +656,7 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       label: "D13",
       dataType: "value",
       offsetPercentage: 25,
+      description: "Digital I/O pin 13 - built-in LED, SPI SCK",
     },
   ],
   width: 364,
