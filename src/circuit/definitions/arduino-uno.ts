@@ -3,6 +3,7 @@ import type {
   InternalEdge,
   TraversalContext,
 } from "@/circuit/catalog/types";
+import { arduinoUnoNodeConfig } from "@/components/nodes/config";
 
 export interface ArduinoUnoData {
   label: string;
@@ -19,9 +20,11 @@ export interface ArduinoUnoData {
  */
 export const arduinoUnoElectrical: ElectricalDefinition<ArduinoUnoData> = {
   internalEdges: (nodeId: string, _data: ArduinoUnoData): InternalEdge[] => {
+    const edges: InternalEdge[] = [];
+
     // Internal power distribution (one-way, from power sources to GND)
     // Mimics real Arduino regulator: VIN feeds 5V/3.3V outputs, all connect to GND rails
-    return [
+    edges.push(
       // VIN → all power rails and grounds
       { from: { nodeId, handleId: "vin" }, to: { nodeId, handleId: "5v" } },
       { from: { nodeId, handleId: "vin" }, to: { nodeId, handleId: "3v3" } },
@@ -35,8 +38,19 @@ export const arduinoUnoElectrical: ElectricalDefinition<ArduinoUnoData> = {
 
       // 3.3V → grounds
       { from: { nodeId, handleId: "3v3" }, to: { nodeId, handleId: "gnd1" } },
-      { from: { nodeId, handleId: "3v3" }, to: { nodeId, handleId: "gnd2" } },
-    ];
+      { from: { nodeId, handleId: "3v3" }, to: { nodeId, handleId: "gnd2" } }
+    );
+
+    // Bidirectional signal pins (D0-D13, A0-A5, RESET, AREF)
+    // These pins have both source and target handles with identical IDs in the config,
+    // which makes them inherently bidirectional in the graph (same key ${nodeId}:${handleId}).
+    // External connections to these pins can conduct in both directions automatically.
+    // No internal edges needed - bidirectionality is achieved through config design.
+
+    // Signal pins from arduinoUnoNodeConfig: d0-d13, a0-a5, reset, aref
+    // Each has both source and target handles with the same ID, enabling bidirectional flow.
+
+    return edges;
   },
 
   deriveState: (context: TraversalContext): Partial<ArduinoUnoData> | undefined => {
