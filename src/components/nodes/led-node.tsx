@@ -1,10 +1,10 @@
-import { type NodeProps, type Node } from "@xyflow/react";
-import type { LedData } from "../circuit-flow";
+import { type NodeProps } from "@xyflow/react";
+import type { LedData } from "@/circuit/catalog";
 import { BlueprintNode } from "./blueprint-node";
 import { ledNodeConfig } from "./config";
 
-export function LedNode(props: NodeProps<Node<LedData>>) {
-  const { data } = props;
+export function LedNode(props: NodeProps) {
+  const data = props.data as unknown as LedData;
   const isPowered = data.isPowered || false;
   const color = data.color || "#ef4444";
 

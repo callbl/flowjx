@@ -1,10 +1,10 @@
-import { type NodeProps, type Node } from "@xyflow/react";
-import type { BatteryData } from "../circuit-flow";
+import { type NodeProps } from "@xyflow/react";
+import type { BatteryData } from "@/circuit/catalog";
 import { BlueprintNode } from "./blueprint-node";
 import { batteryNodeConfig } from "./config";
 
-export function BatteryNode(props: NodeProps<Node<BatteryData>>) {
-  const { data } = props;
+export function BatteryNode(props: NodeProps) {
+  const data = props.data as unknown as BatteryData;
 
   return (
     <BlueprintNode {...props} config={batteryNodeConfig}>
