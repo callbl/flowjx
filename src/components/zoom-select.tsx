@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback } from "react";
+import { useCallback } from "react";
 import { Panel, useReactFlow, useStore, type PanelProps } from "@xyflow/react";
 
 import {
