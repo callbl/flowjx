@@ -12,7 +12,6 @@ export { BlueprintNode } from "./blueprint-node";
 export {
   type NodeConfig,
   type HandleConfig,
-  type NodeTheme,
   batteryNodeConfig,
   ledNodeConfig,
   buttonNodeConfig,
