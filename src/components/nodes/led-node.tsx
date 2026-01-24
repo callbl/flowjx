@@ -1,67 +1,63 @@
-import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
-import { PlusIcon, MinusIcon } from "lucide-react";
+import { type NodeProps, type Node } from "@xyflow/react";
 import type { LedData } from "../circuit-flow";
-import { NodeToolbarContent } from "../node-toolbar-content";
+import { BlueprintNode } from "./blueprint-node";
+import { ledNodeConfig } from "./config";
 
-export function LedNode({ id, data, selected }: NodeProps<Node<LedData>>) {
+export function LedNode(props: NodeProps<Node<LedData>>) {
+  const { data } = props;
   const isPowered = data.isPowered || false;
-  const color = data.color || "#ef4444"; // Default to red
+  const color = data.color || "#ef4444";
 
   return (
-    <>
-      {selected && <NodeToolbarContent nodeId={id} />}
-      <div
-        className="px-4 py-3 rounded-lg border-2 bg-white shadow-md min-w-[100px] relative"
-        style={{
-          borderColor: color,
-        }}
-      >
-        <div className="font-semibold text-sm mb-2">{data.label}</div>
-        <div className="flex justify-center mb-2">
+    <BlueprintNode {...props} config={ledNodeConfig}>
+      <div className="flex flex-col gap-3">
+        {/* Status */}
+        <div className="text-center">
           <div
-            className={`size-12 rounded-full border-4 transition-all duration-300 ${
-              isPowered ? "shadow-lg" : ""
-            }`}
-            style={{
-              borderColor: color,
-              backgroundColor: isPowered ? color : `${color}20`,
-            }}
-          />
+            className="text-xs font-semibold uppercase tracking-wider"
+            style={{ color: isPowered ? color : "#9ca3af" }}
+          >
+            {isPowered ? "Powered" : "Off"}
+          </div>
         </div>
-        {/* Polarity indicators */}
-        <PlusIcon className="absolute left-2 top-[35%] translate-y-[-50%] translate-x-[-50%] size-2 text-green-500" />
-        <MinusIcon className="absolute left-2 top-[65%] translate-y-[-50%] translate-x-[-50%] size-2 text-gray-800" />
-        {/* Anode handle (positive terminal) - both input and output */}
-        <Handle
-          type="target"
-          position={Position.Left}
-          id="anode"
-          style={{ top: "35%" }}
-          className="size-2"
-        />
-        <Handle
-          type="source"
-          position={Position.Left}
-          id="anode"
-          style={{ top: "35%" }}
-          className="size-2"
-        />
-        {/* Cathode handle (negative terminal) - both input and output */}
-        <Handle
-          type="target"
-          position={Position.Left}
-          id="cathode"
-          style={{ top: "65%" }}
-          className="size-2"
-        />
-        <Handle
-          type="source"
-          position={Position.Left}
-          id="cathode"
-          style={{ top: "65%" }}
-          className="size-2"
-        />
+
+        {/* LED Visual */}
+        <div className="flex justify-center">
+          <div className="relative">
+            <div
+              className="w-14 h-14 rounded-full transition-all duration-300"
+              style={{
+                backgroundColor: isPowered ? color : "#374151",
+                boxShadow: isPowered
+                  ? `0 0 20px ${color}, 0 0 40px ${color}80`
+                  : "none",
+                border: `3px solid ${isPowered ? color : "#4b5563"}`,
+              }}
+            />
+            {isPowered && (
+              <div
+                className="absolute inset-0 rounded-full animate-pulse"
+                style={{
+                  backgroundColor: `${color}40`,
+                  filter: "blur(8px)",
+                }}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Pin Labels */}
+        <div className="flex justify-between text-xs text-gray-400 px-2">
+          <div>
+            <div className="text-amber-400">+</div>
+            <div className="text-[10px]">Anode</div>
+          </div>
+          <div className="text-right">
+            <div className="text-gray-400">−</div>
+            <div className="text-[10px]">Cathode</div>
+          </div>
+        </div>
       </div>
-    </>
+    </BlueprintNode>
   );
 }
