@@ -46,10 +46,13 @@ export const StraightLineIcon = (props: SVGProps<SVGSVGElement>) => (
     xmlns="http://www.w3.org/2000/svg"
     width={800}
     height={800}
-    viewBox="0 0 24 24"
+    fill="none"
+    viewBox="0 0 15 15"
     {...props}
   >
-    <path d="M2 19v3h3v-2.293L19.707 5H22V2h-3v2.293L4.293 19zm2 2H3v-1h1zM20 3h1v1h-1z" />
-    <path fill="none" d="M0 0h24v24H0z" />
+    <path
+      stroke="currentColor"
+      d="m2 2 11 11M1.5 2.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm12 12a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"
+    />
   </svg>
 );
