@@ -115,7 +115,7 @@ export const useCircuitStore = create<CircuitState>()(
               };
               break;
             case "arduino-uno":
-              data = { label };
+              data = { label, isPowered: false };
               break;
           }
 

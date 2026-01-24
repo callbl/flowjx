@@ -1,5 +1,9 @@
 import type { Node, Edge } from "@xyflow/react";
-import type { LedData, ButtonData } from "@/components/circuit-flow";
+import type {
+  LedData,
+  ButtonData,
+  ArduinoUnoData,
+} from "@/components/circuit-flow";
 
 /**
  * Finds connected components in the circuit.
@@ -9,10 +13,7 @@ import type { LedData, ButtonData } from "@/components/circuit-flow";
  * @param edges - All edges in the circuit
  * @returns Array of connected components, each containing a set of node IDs
  */
-function findConnectedComponents(
-  nodes: Node[],
-  edges: Edge[]
-): Set<string>[] {
+function findConnectedComponents(nodes: Node[], edges: Edge[]): Set<string>[] {
   // Build node-level adjacency list (not handle-specific)
   const nodeGraph = new Map<string, Set<string>>();
 
@@ -72,21 +73,22 @@ function findConnectedComponents(
  */
 export function simulateCircuit(
   currentNodes: Node[],
-  currentEdges: Edge[]
+  currentEdges: Edge[],
 ): Node[] {
   // Find connected components - each represents an isolated circuit
   const components = findConnectedComponents(currentNodes, currentEdges);
   const allPoweredLeds = new Set<string>();
+  const allPoweredArduinos = new Set<string>();
 
   // Simulate each connected component independently
   components.forEach((componentNodeIds) => {
     // Filter nodes and edges for this component only
     const componentNodes = currentNodes.filter((node) =>
-      componentNodeIds.has(node.id)
+      componentNodeIds.has(node.id),
     );
     const componentEdges = currentEdges.filter(
       (edge) =>
-        componentNodeIds.has(edge.source) && componentNodeIds.has(edge.target)
+        componentNodeIds.has(edge.source) && componentNodeIds.has(edge.target),
     );
 
     // Build adjacency list from edges - bidirectional graph
@@ -113,127 +115,170 @@ export function simulateCircuit(
     // Find batteries in this component only
     const batteries = componentNodes.filter((n) => n.type === "battery");
     const poweredLeds = new Set<string>();
+    const poweredArduinos = new Set<string>();
 
     // For each battery in this component, trace circuits from + to -
     batteries.forEach((battery) => {
-    const visited = new Set<string>();
-    const queue: Array<{
-      nodeId: string;
-      handleId: string;
-      path: string[];
-    }> = [];
+      const visited = new Set<string>();
+      const queue: Array<{
+        nodeId: string;
+        handleId: string;
+        path: string[];
+      }> = [];
 
-    // Start from battery positive terminal
-    queue.push({
-      nodeId: battery.id,
-      handleId: "plus",
-      path: [battery.id],
-    });
-
-    while (queue.length > 0) {
-      const current = queue.shift()!;
-      const key = `${current.nodeId}:${current.handleId}`;
-
-      if (visited.has(key)) continue;
-      visited.add(key);
-
-      // Check if we reached battery negative terminal - complete circuit!
-      if (current.nodeId === battery.id && current.handleId === "minus") {
-        // Mark all LEDs in this path as powered (only if properly connected)
-        current.path.forEach((nodeId) => {
-          const node = componentNodes.find((n) => n.id === nodeId);
-          if (node?.type === "led") {
-            // Verify LED is connected with correct polarity
-            const ledAnodeKey = `${nodeId}:anode`;
-            const ledCathodeKey = `${nodeId}:cathode`;
-
-            // Check if both anode and cathode are connected
-            const anodeConnected =
-              graph.has(ledAnodeKey) && graph.get(ledAnodeKey)!.length > 0;
-            const cathodeConnected =
-              graph.has(ledCathodeKey) &&
-              graph.get(ledCathodeKey)!.length > 0;
-
-            if (anodeConnected && cathodeConnected) {
-              poweredLeds.add(nodeId);
-            }
-          }
-        });
-        continue;
-      }
-
-      // Get current node
-      const currentNode = componentNodes.find((n) => n.id === current.nodeId);
-      if (!currentNode) continue;
-
-      // First, explore direct neighbors from this handle
-      const neighbors = graph.get(key) || [];
-      neighbors.forEach((neighbor) => {
-        const neighborKey = `${neighbor.nodeId}:${neighbor.handleId}`;
-        if (!visited.has(neighborKey)) {
-          queue.push({
-            nodeId: neighbor.nodeId,
-            handleId: neighbor.handleId,
-            path: [...current.path, neighbor.nodeId],
-          });
-        }
+      // Start from battery positive terminal
+      queue.push({
+        nodeId: battery.id,
+        handleId: "plus",
+        path: [battery.id],
       });
 
-      // Then handle internal component connections
-      if (currentNode.type === "led") {
-        // LED: Current flows anode → cathode only
-        if (current.handleId === "anode") {
-          // Can flow through to cathode
-          const cathodeKey = `${current.nodeId}:cathode`;
-          const cathodeNeighbors = graph.get(cathodeKey) || [];
+      while (queue.length > 0) {
+        const current = queue.shift()!;
+        const key = `${current.nodeId}:${current.handleId}`;
 
-          cathodeNeighbors.forEach((neighbor) => {
-            const neighborKey = `${neighbor.nodeId}:${neighbor.handleId}`;
-            if (!visited.has(neighborKey)) {
-              // If flowing to a different node, add it to path
-              // If flowing internally (same node), don't add to path
-              const newPath =
-                neighbor.nodeId !== current.nodeId
-                  ? [...current.path, neighbor.nodeId]
-                  : current.path;
+        if (visited.has(key)) continue;
+        visited.add(key);
 
-              queue.push({
-                nodeId: neighbor.nodeId,
-                handleId: neighbor.handleId,
-                path: newPath,
-              });
+        // Check if we reached battery negative terminal - complete circuit!
+        if (current.nodeId === battery.id && current.handleId === "minus") {
+          // Mark all LEDs in this path as powered (only if properly connected)
+          current.path.forEach((nodeId) => {
+            const node = componentNodes.find((n) => n.id === nodeId);
+            if (node?.type === "led") {
+              // Verify LED is connected with correct polarity
+              const ledAnodeKey = `${nodeId}:anode`;
+              const ledCathodeKey = `${nodeId}:cathode`;
+
+              // Check if both anode and cathode are connected
+              const anodeConnected =
+                graph.has(ledAnodeKey) && graph.get(ledAnodeKey)!.length > 0;
+              const cathodeConnected =
+                graph.has(ledCathodeKey) &&
+                graph.get(ledCathodeKey)!.length > 0;
+
+              if (anodeConnected && cathodeConnected) {
+                poweredLeds.add(nodeId);
+              }
+            } else if (node?.type === "arduino-uno") {
+              // Verify Arduino is connected with correct power pins (5V and GND)
+              const fiveVKey = `${nodeId}:5v`;
+              const gnd1Key = `${nodeId}:gnd1`;
+              const gnd2Key = `${nodeId}:gnd2`;
+
+              // Check if 5V and at least one GND are connected
+              const fiveVConnected =
+                graph.has(fiveVKey) && graph.get(fiveVKey)!.length > 0;
+              const gndConnected =
+                (graph.has(gnd1Key) && graph.get(gnd1Key)!.length > 0) ||
+                (graph.has(gnd2Key) && graph.get(gnd2Key)!.length > 0);
+
+              if (fiveVConnected && gndConnected) {
+                poweredArduinos.add(nodeId);
+              }
             }
           });
+          continue;
         }
-        // If at cathode, don't allow flow back to anode (wrong direction)
-      } else if (currentNode.type === "button") {
-        // Button: Only conducts when closed, bidirectional
-        if ((currentNode.data as ButtonData).isClosed) {
-          const otherHandle = current.handleId === "in" ? "out" : "in";
-          const otherKey = `${current.nodeId}:${otherHandle}`;
-          const otherNeighbors = graph.get(otherKey) || [];
 
-          otherNeighbors.forEach((neighbor) => {
-            const neighborKey = `${neighbor.nodeId}:${neighbor.handleId}`;
-            if (!visited.has(neighborKey)) {
-              queue.push({
-                nodeId: neighbor.nodeId,
-                handleId: neighbor.handleId,
-                path: current.path,
+        // Get current node
+        const currentNode = componentNodes.find((n) => n.id === current.nodeId);
+        if (!currentNode) continue;
+
+        // First, explore direct neighbors from this handle
+        const neighbors = graph.get(key) || [];
+        neighbors.forEach((neighbor) => {
+          const neighborKey = `${neighbor.nodeId}:${neighbor.handleId}`;
+          if (!visited.has(neighborKey)) {
+            queue.push({
+              nodeId: neighbor.nodeId,
+              handleId: neighbor.handleId,
+              path: [...current.path, neighbor.nodeId],
+            });
+          }
+        });
+
+        // Then handle internal component connections
+        if (currentNode.type === "led") {
+          // LED: Current flows anode → cathode only
+          if (current.handleId === "anode") {
+            // Can flow through to cathode
+            const cathodeKey = `${current.nodeId}:cathode`;
+            const cathodeNeighbors = graph.get(cathodeKey) || [];
+
+            cathodeNeighbors.forEach((neighbor) => {
+              const neighborKey = `${neighbor.nodeId}:${neighbor.handleId}`;
+              if (!visited.has(neighborKey)) {
+                // If flowing to a different node, add it to path
+                // If flowing internally (same node), don't add to path
+                const newPath =
+                  neighbor.nodeId !== current.nodeId
+                    ? [...current.path, neighbor.nodeId]
+                    : current.path;
+
+                queue.push({
+                  nodeId: neighbor.nodeId,
+                  handleId: neighbor.handleId,
+                  path: newPath,
+                });
+              }
+            });
+          }
+          // If at cathode, don't allow flow back to anode (wrong direction)
+        } else if (currentNode.type === "button") {
+          // Button: Only conducts when closed, bidirectional
+          if ((currentNode.data as ButtonData).isClosed) {
+            const otherHandle = current.handleId === "in" ? "out" : "in";
+            const otherKey = `${current.nodeId}:${otherHandle}`;
+            const otherNeighbors = graph.get(otherKey) || [];
+
+            otherNeighbors.forEach((neighbor) => {
+              const neighborKey = `${neighbor.nodeId}:${neighbor.handleId}`;
+              if (!visited.has(neighborKey)) {
+                queue.push({
+                  nodeId: neighbor.nodeId,
+                  handleId: neighbor.handleId,
+                  path: current.path,
+                });
+              }
+            });
+          }
+          // If button is open, it blocks current flow (already handled by not exploring)
+        } else if (currentNode.type === "arduino-uno") {
+          // Arduino: Current flows from 5V to GND (internal power routing)
+          if (current.handleId === "5v") {
+            // Can flow through to any GND pin (gnd1 or gnd2)
+            const gndPins = ["gnd1", "gnd2"];
+
+            gndPins.forEach((gndPin) => {
+              const gndKey = `${current.nodeId}:${gndPin}`;
+              const gndNeighbors = graph.get(gndKey) || [];
+
+              gndNeighbors.forEach((neighbor) => {
+                const neighborKey = `${neighbor.nodeId}:${neighbor.handleId}`;
+                if (!visited.has(neighborKey)) {
+                  queue.push({
+                    nodeId: neighbor.nodeId,
+                    handleId: neighbor.handleId,
+                    path: current.path,
+                  });
+                }
               });
-            }
-          });
+            });
+          }
+          // If at GND, don't allow flow back to 5V (wrong direction)
         }
-        // If button is open, it blocks current flow (already handled by not exploring)
       }
-    }
     });
 
     // Add this component's powered LEDs to the global set
     poweredLeds.forEach((ledId) => allPoweredLeds.add(ledId));
+
+    // Add this component's powered Arduinos to the global set
+    poweredArduinos.forEach((arduinoId) => allPoweredArduinos.add(arduinoId));
   });
 
-  // Update LED powered states only if they changed
+  // Update LED and Arduino powered states only if they changed
   let hasChanges = false;
   const updatedNodes = currentNodes.map((node) => {
     if (node.type === "led") {
@@ -248,6 +293,21 @@ export function simulateCircuit(
             ...node.data,
             isPowered: shouldBePowered,
           } as LedData,
+        };
+      }
+    } else if (node.type === "arduino-uno") {
+      const shouldBePowered = allPoweredArduinos.has(node.id);
+      const currentlyPowered =
+        (node.data as ArduinoUnoData)?.isPowered || false;
+
+      if (shouldBePowered !== currentlyPowered) {
+        hasChanges = true;
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            isPowered: shouldBePowered,
+          } as ArduinoUnoData,
         };
       }
     }
