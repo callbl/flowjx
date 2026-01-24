@@ -44,6 +44,7 @@ import {
   parseCircuitFile,
   CircuitFileParseError,
 } from "@/persistence/circuit-file";
+import { useTheme } from "./providers/theme-provider";
 
 const edgeTypes = {
   default: DataEdge,
@@ -67,6 +68,7 @@ function CircuitFlowInner() {
   const isPanelOpen = useIsPanelOpen();
   const setPanelOpen = useSetPanelOpen();
   const { addNode, logConnections, runSimulation } = useCircuitActions();
+  const { theme } = useTheme();
 
   // React Flow instance for toObject() and setViewport()
   const { toObject, setViewport } = useReactFlow();
@@ -159,6 +161,7 @@ function CircuitFlowInner() {
         nodeTypes={NODE_TYPES}
         edgeTypes={edgeTypes}
         fitView
+        colorMode={theme}
       >
         <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
         <Controls />
