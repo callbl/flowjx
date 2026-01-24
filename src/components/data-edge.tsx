@@ -13,7 +13,7 @@ import {
   type Node,
 } from "@xyflow/react";
 import { Button } from "./ui/button";
-import { ColorSelector } from "./color-selector";
+import { ColorSelector, DEFAULT_EDGE_COLOR } from "./color-selector";
 import { useCircuitActions } from "@/hooks/use-circuit";
 
 export type DataEdge<T extends Node = Node> = Edge<{
@@ -94,10 +94,11 @@ export function DataEdge({
   const labelTransform = `translate(${labelX}px,${labelY}px) translate(-50%, -50%)`;
   const toolbarTransform = `translate(${labelX}px,${labelY - 30}px) translate(-50%, -50%)`;
 
-  const edgeColor = data.color || undefined;
+  const edgeColor = data.color || DEFAULT_EDGE_COLOR;
   const edgeStyle = {
     ...style,
-    ...(edgeColor && { stroke: edgeColor, strokeWidth: 1 }),
+    stroke: edgeColor,
+    strokeWidth: 2,
   };
 
   return (
@@ -127,7 +128,7 @@ export function DataEdge({
             }}
           >
             <ColorSelector
-              selectedColor={data.color}
+              selectedColor={edgeColor}
               onColorChange={handleColorChange}
             />
             <div className="h-4 w-px bg-border mx-0.5" />
