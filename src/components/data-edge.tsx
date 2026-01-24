@@ -97,7 +97,7 @@ export function DataEdge({
   const edgeColor = data.color || undefined;
   const edgeStyle = {
     ...style,
-    ...(edgeColor && { stroke: edgeColor, strokeWidth: 2 }),
+    ...(edgeColor && { stroke: edgeColor, strokeWidth: 1 }),
   };
 
   return (
