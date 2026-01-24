@@ -4,7 +4,6 @@ import {
   ReactFlowProvider,
   Panel,
   Background,
-  Controls,
   BackgroundVariant,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -29,6 +28,7 @@ import {
   useCircuitActions,
 } from "@/hooks/use-circuit";
 import { useTheme } from "./providers/theme-provider";
+import { ZoomSlider } from "./zoom-slider";
 import AppMenu from "./app-menu";
 
 const edgeTypes = {
@@ -67,7 +67,7 @@ function CircuitFlowInner() {
         colorMode={theme}
       >
         <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
-        <Controls />
+        <ZoomSlider position="bottom-left" />
 
         {/* Equipment Sheet - Top Left */}
         <Panel position="top-left">
