@@ -1,12 +1,13 @@
-import { type NodeProps, type Node } from "@xyflow/react";
-import type { ButtonData } from "../circuit-flow";
+import { type NodeProps } from "@xyflow/react";
+import type { ButtonData } from "@/circuit/catalog";
 import { BlueprintNode } from "./blueprint-node";
 import { buttonNodeConfig } from "./config";
 import { useCircuitActions } from "@/hooks/use-circuit";
 import { Button } from "../ui/button";
 
-export function ButtonNode(props: NodeProps<Node<ButtonData>>) {
-  const { id, data } = props;
+export function ButtonNode(props: NodeProps) {
+  const { id } = props;
+  const data = props.data as unknown as ButtonData;
   const isClosed = data.isClosed || false;
   const { toggleButton } = useCircuitActions();
 

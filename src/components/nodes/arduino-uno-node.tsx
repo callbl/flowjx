@@ -1,10 +1,11 @@
-import { type NodeProps, type Node } from "@xyflow/react";
-import type { ArduinoUnoData } from "../circuit-flow";
+import { type NodeProps } from "@xyflow/react";
+import type { ArduinoUnoData } from "@/circuit/catalog";
 import { BlueprintNode } from "./blueprint-node";
 import { arduinoUnoNodeConfig } from "./config";
 
-export function ArduinoUnoNode(props: NodeProps<Node<ArduinoUnoData>>) {
-  const isPowered = props.data?.isPowered || false;
+export function ArduinoUnoNode(props: NodeProps) {
+  const data = props.data as unknown as ArduinoUnoData;
+  const isPowered = data?.isPowered || false;
 
   return (
     <BlueprintNode {...props} config={arduinoUnoNodeConfig}>

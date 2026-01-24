@@ -12,14 +12,11 @@ import {
   addEdge as addReactFlowEdge,
 } from "@xyflow/react";
 import { simulateCircuit } from "@/lib/circuit-simulation";
-import type {
-  BatteryData,
-  LedData,
-  ButtonData,
-  ArduinoUnoData,
-} from "@/components/circuit-flow";
+import { NODE_CATALOG, createDefaultNode } from "@/circuit/catalog";
+import type { ButtonData } from "@/circuit/catalog";
 
-export type EquipmentType = "battery" | "led" | "button" | "arduino-uno";
+// Derive EquipmentType from catalog keys
+export type EquipmentType = keyof typeof NODE_CATALOG;
 
 export type EdgeData = {
   color?: string;
@@ -64,17 +61,6 @@ interface CircuitState {
   logConnections: () => void;
 }
 
-const equipmentItems: Array<{
-  type: EquipmentType;
-  label: string;
-  icon: string;
-}> = [
-  { type: "battery", label: "Battery", icon: "🔋" },
-  { type: "led", label: "LED", icon: "💡" },
-  { type: "button", label: "Button", icon: "🔘" },
-  { type: "arduino-uno", label: "Arduino Uno", icon: "🤖" },
-];
-
 export const useCircuitStore = create<CircuitState>()(
   devtools(
     persist(
@@ -88,9 +74,6 @@ export const useCircuitStore = create<CircuitState>()(
         // Node Actions
         addNode: (type: EquipmentType) => {
           const { nodes } = get();
-          const id = crypto.randomUUID();
-          const label =
-            equipmentItems.find((item) => item.type === type)?.label || type;
 
           // Position node with offset based on current node count
           const position = {
@@ -98,33 +81,8 @@ export const useCircuitStore = create<CircuitState>()(
             y: 100 + nodes.length * 20,
           };
 
-          // Create node data based on type
-          let data: BatteryData | LedData | ButtonData | ArduinoUnoData;
-
-          switch (type) {
-            case "battery":
-              data = { label, voltage: 5 };
-              break;
-            case "led":
-              data = { label, isPowered: false };
-              break;
-            case "button":
-              data = {
-                label,
-                isClosed: false,
-              };
-              break;
-            case "arduino-uno":
-              data = { label, isPowered: false };
-              break;
-          }
-
-          const newNode: Node = {
-            id,
-            type,
-            position,
-            data,
-          };
+          // Create node using catalog defaults
+          const newNode = createDefaultNode({ type, position });
 
           set({
             nodes: [...nodes, newNode],
@@ -267,12 +225,13 @@ export const useCircuitStore = create<CircuitState>()(
 
           const updatedNodes = nodes.map((node) => {
             if (node.id === nodeId && node.type === "button") {
+              const buttonData = node.data as unknown as ButtonData;
               return {
                 ...node,
                 data: {
-                  ...node.data,
-                  isClosed: !(node.data as ButtonData).isClosed,
-                } as ButtonData,
+                  ...buttonData,
+                  isClosed: !buttonData.isClosed,
+                },
               };
             }
             return node;
@@ -292,7 +251,11 @@ export const useCircuitStore = create<CircuitState>()(
           // Extract powered LEDs for potential UI indicators
           const poweredLeds = new Set<string>();
           updatedNodes.forEach((node) => {
-            if (node.type === "led" && (node.data as LedData).isPowered) {
+            if (
+              node.type === "led" &&
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (node.data as any).isPowered
+            ) {
               poweredLeds.add(node.id);
             }
           });

@@ -3,7 +3,7 @@ import { NodeToolbar, Position } from "@xyflow/react";
 import { Button } from "./ui/button";
 import { ColorSelector } from "./color-selector";
 import { useCircuitActions, useNode } from "@/hooks/use-circuit";
-import type { LedData } from "./circuit-flow";
+import type { LedData } from "@/circuit/catalog";
 
 type NodeToolbarContentProps = {
   nodeId: string;
@@ -36,7 +36,7 @@ export function NodeToolbarContent({ nodeId }: NodeToolbarContentProps) {
       {isLed && (
         <>
           <ColorSelector
-            selectedColor={(node.data as LedData).color}
+            selectedColor={(node.data as unknown as LedData).color}
             onColorChange={handleColorChange}
           />
           <div className="h-4 w-px bg-border mx-0.5" />

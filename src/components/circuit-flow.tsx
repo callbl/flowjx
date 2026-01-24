@@ -184,7 +184,7 @@ function CircuitFlowInner() {
                   return (
                     <button
                       key={item.type}
-                      onClick={() => addNode(item.type)}
+                      onClick={() => addNode(item.type as never)}
                       className="flex flex-col items-center gap-2 p-4 border-1 border-primary/5 rounded-lg hover:border-primary hover:bg-primary/5 transition-colors"
                     >
                       <IconComponent className="w-8 h-8" />
