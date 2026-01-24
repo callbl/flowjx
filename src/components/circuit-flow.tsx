@@ -11,10 +11,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
-import { BatteryNode } from "./nodes/battery-node";
-import { LedNode } from "./nodes/led-node";
-import { ButtonNode } from "./nodes/button-node";
-import { ArduinoUnoNode } from "./nodes/arduino-uno-node";
+import { NODE_TYPES, EQUIPMENT_ITEMS } from "@/circuit/catalog";
 import { DataEdge } from "./data-edge";
 import { Button } from "./ui/button";
 import {
@@ -48,51 +45,17 @@ import {
   CircuitFileParseError,
 } from "@/persistence/circuit-file";
 
-const nodeTypes = {
-  battery: BatteryNode,
-  led: LedNode,
-  button: ButtonNode,
-  "arduino-uno": ArduinoUnoNode,
-};
-
 const edgeTypes = {
   default: DataEdge,
 };
 
-// Node data types (exported for use in other files)
-export type BatteryData = {
-  label: string;
-  voltage: number;
-};
-
-export type LedData = {
-  label: string;
-  isPowered: boolean;
-  color?: string;
-};
-
-export type ButtonData = {
-  label: string;
-  isClosed: boolean;
-};
-
-export type ArduinoUnoData = {
-  label: string;
-  isPowered: boolean;
-};
-
-type EquipmentType = "battery" | "led" | "button" | "arduino-uno";
-
-const equipmentItems: Array<{
-  type: EquipmentType;
-  label: string;
-  icon: string;
-}> = [
-  { type: "battery", label: "Battery", icon: "🔋" },
-  { type: "led", label: "LED", icon: "💡" },
-  { type: "button", label: "Button", icon: "🔘" },
-  { type: "arduino-uno", label: "Arduino Uno", icon: "🤖" },
-];
+// Re-export node data types from catalog for backward compatibility
+export type {
+  BatteryData,
+  LedData,
+  ButtonData,
+  ArduinoUnoData,
+} from "@/circuit/catalog";
 
 function CircuitFlowInner() {
   // Zustand store hooks
@@ -193,7 +156,7 @@ function CircuitFlowInner() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-        nodeTypes={nodeTypes}
+        nodeTypes={NODE_TYPES}
         edgeTypes={edgeTypes}
         fitView
       >
@@ -216,16 +179,19 @@ function CircuitFlowInner() {
                 </SheetDescription>
               </SheetHeader>
               <div className="p-4 grid grid-cols-2 gap-3 mt-6">
-                {equipmentItems.map((item) => (
-                  <button
-                    key={item.type}
-                    onClick={() => addNode(item.type)}
-                    className="flex flex-col items-center gap-2 p-4 border-1 border-primary/5 rounded-lg hover:border-primary hover:bg-primary/5 transition-colors"
-                  >
-                    <span className="text-4xl">{item.icon}</span>
-                    <span className="font-medium text-sm">{item.label}</span>
-                  </button>
-                ))}
+                {EQUIPMENT_ITEMS.map((item) => {
+                  const IconComponent = item.icon;
+                  return (
+                    <button
+                      key={item.type}
+                      onClick={() => addNode(item.type)}
+                      className="flex flex-col items-center gap-2 p-4 border-1 border-primary/5 rounded-lg hover:border-primary hover:bg-primary/5 transition-colors"
+                    >
+                      <IconComponent className="w-8 h-8" />
+                      <span className="font-medium text-sm">{item.label}</span>
+                    </button>
+                  );
+                })}
               </div>
             </SheetContent>
           </Sheet>
