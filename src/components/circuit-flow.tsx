@@ -78,6 +78,7 @@ export type ButtonData = {
 
 export type ArduinoUnoData = {
   label: string;
+  isPowered: boolean;
 };
 
 type EquipmentType = "battery" | "led" | "button" | "arduino-uno";

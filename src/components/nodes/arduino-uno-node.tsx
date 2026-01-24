@@ -4,6 +4,8 @@ import { BlueprintNode } from "./blueprint-node";
 import { arduinoUnoNodeConfig } from "./config";
 
 export function ArduinoUnoNode(props: NodeProps<Node<ArduinoUnoData>>) {
+  const isPowered = props.data?.isPowered || false;
+
   return (
     <BlueprintNode {...props} config={arduinoUnoNodeConfig}>
       <div className="flex flex-col gap-3 p-4">
@@ -24,8 +26,14 @@ export function ArduinoUnoNode(props: NodeProps<Node<ArduinoUnoData>>) {
                 </div>
               </div>
 
-              {/* Power LED */}
-              <div className="absolute top-6 left-4 w-2 h-2 bg-green-400 rounded-full shadow-[0_0_4px_#4ade80]" />
+              {/* Power LED - glows when powered */}
+              <div
+                className={`absolute top-6 left-4 w-2 h-2 rounded-full transition-all duration-300 ${
+                  isPowered
+                    ? "bg-green-400 shadow-[0_0_8px_#4ade80,0_0_16px_#4ade80]"
+                    : "bg-green-900 shadow-none"
+                }`}
+              />
 
               {/* Pin headers - Left */}
               <div className="absolute left-0 top-10 flex flex-col gap-1.5 -translate-x-1">
