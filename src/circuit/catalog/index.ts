@@ -68,6 +68,7 @@ export const NODE_CATALOG = {
     defaults: (label: string): ArduinoUnoData => ({
       label,
       isPowered: false,
+      onboardLedPowered: false,
     }),
     electrical: arduinoUnoElectrical,
   } satisfies NodeCatalogEntry<ArduinoUnoData>,

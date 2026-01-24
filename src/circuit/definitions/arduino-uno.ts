@@ -8,6 +8,7 @@ import { arduinoUnoNodeConfig } from "@/components/nodes/config";
 export interface ArduinoUnoData {
   label: string;
   isPowered: boolean;
+  onboardLedPowered?: boolean;
 }
 
 /**
@@ -61,12 +62,14 @@ export const arduinoUnoElectrical: ElectricalDefinition<ArduinoUnoData> = {
     const fiveVKey = `${nodeId}:5v`;
     const gnd1Key = `${nodeId}:gnd1`;
     const gnd2Key = `${nodeId}:gnd2`;
+    const d13Key = `${nodeId}:d13`;
 
     const vinConnected = graph.has(vinKey) && graph.get(vinKey)!.length > 0;
     const fiveVConnected = graph.has(fiveVKey) && graph.get(fiveVKey)!.length > 0;
     const gndConnected =
       (graph.has(gnd1Key) && graph.get(gnd1Key)!.length > 0) ||
       (graph.has(gnd2Key) && graph.get(gnd2Key)!.length > 0);
+    const d13Connected = graph.has(d13Key) && graph.get(d13Key)!.length > 0;
 
     // Arduino is powered if (VIN or 5V) and GND connected AND it's in a complete path
     const isPowered =
@@ -74,6 +77,9 @@ export const arduinoUnoElectrical: ElectricalDefinition<ArduinoUnoData> = {
       gndConnected &&
       nodesInCompletePaths.has(nodeId);
 
-    return { isPowered };
+    // Onboard D13 LED is powered when Arduino is powered AND D13 has external connection
+    const onboardLedPowered = isPowered && d13Connected;
+
+    return { isPowered, onboardLedPowered };
   },
 };

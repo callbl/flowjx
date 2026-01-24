@@ -6,6 +6,7 @@ import { arduinoUnoNodeConfig } from "./config";
 export function ArduinoUnoNode(props: NodeProps) {
   const data = props.data as unknown as ArduinoUnoData;
   const isPowered = data?.isPowered || false;
+  const onboardLedPowered = data?.onboardLedPowered || false;
 
   return (
     <BlueprintNode {...props} config={arduinoUnoNodeConfig}>
@@ -35,6 +36,18 @@ export function ArduinoUnoNode(props: NodeProps) {
                     : "bg-green-900 shadow-none"
                 }`}
               />
+
+              {/* D13 Onboard LED - positioned near top right (where D13 pin is) */}
+              <div className="absolute top-5 right-4 flex flex-col items-center gap-0.5">
+                <div className="text-[6px] text-white/60 font-mono">L</div>
+                <div
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    onboardLedPowered
+                      ? "bg-amber-400 shadow-[0_0_8px_#fbbf24,0_0_16px_#fbbf24]"
+                      : "bg-amber-900 shadow-none"
+                  }`}
+                />
+              </div>
 
               {/* Pin headers - Left */}
               <div className="absolute left-0 top-10 flex flex-col gap-1.5 -translate-x-1">
