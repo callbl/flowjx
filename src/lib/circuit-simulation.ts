@@ -51,6 +51,65 @@ function findConnectedComponents(nodes: Node[], edges: Edge[]): Set<string>[] {
 }
 
 /**
+ * Helper: Find all handles reachable from given sources via BFS
+ */
+function reachableFromSources(
+  sources: string[],
+  graph: Map<string, Array<{ nodeId: string; handleId: string }>>,
+): Set<string> {
+  const reachable = new Set<string>();
+  const queue = [...sources];
+  const visited = new Set<string>();
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    if (visited.has(current)) continue;
+    visited.add(current);
+    reachable.add(current);
+
+    const neighbors = graph.get(current) || [];
+    neighbors.forEach((neighbor) => {
+      const neighborKey = `${neighbor.nodeId}:${neighbor.handleId}`;
+      if (!visited.has(neighborKey)) {
+        queue.push(neighborKey);
+      }
+    });
+  }
+
+  return reachable;
+}
+
+/**
+ * Helper: Check if any target is reachable from startKey via BFS
+ */
+function canReachAny(
+  targets: Set<string>,
+  startKey: string,
+  graph: Map<string, Array<{ nodeId: string; handleId: string }>>,
+): boolean {
+  const queue = [startKey];
+  const visited = new Set<string>();
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    if (visited.has(current)) continue;
+    visited.add(current);
+
+    if (targets.has(current)) return true;
+
+    const neighbors = graph.get(current) || [];
+    neighbors.forEach((neighbor) => {
+      const neighborKey = `${neighbor.nodeId}:${neighbor.handleId}`;
+      if (!visited.has(neighborKey)) {
+        queue.push(neighborKey);
+      }
+    });
+  }
+
+  return false;
+}
+
+/**
  * Definition-driven circuit simulation engine using BFS graph traversal.
  *
  * Algorithm:
@@ -60,6 +119,7 @@ function findConnectedComponents(nodes: Node[], edges: Edge[]): Set<string>[] {
  *    b. Inject internal edges from node electrical definitions
  *    c. For each battery, perform BFS from + to - terminal
  *    d. Track all nodes found in complete circuit paths
+ *    e. Find Arduino OUTPUT/HIGH pins and compute LED power from pin signals
  * 3. Call deriveState on each node to compute updated state
  * 4. Return updated nodes
  *
@@ -198,6 +258,48 @@ export function simulateCircuit(
     nodesInCompletePaths.forEach((nodeId) =>
       allNodesInCompletePaths.add(nodeId),
     );
+
+    // Pin signal propagation: Arduino OUTPUT/HIGH pins can power LEDs
+    // Find all Arduino nodes that are powered and have OUTPUT pins set to HIGH
+    const arduinoNodes = componentNodes.filter(
+      (n) => n.type === "arduino-uno" && n.data.isPowered === true,
+    );
+
+    const highSources: string[] = [];
+    arduinoNodes.forEach((arduino) => {
+      const digitalPins = arduino.data.digitalPins || {};
+      Object.entries(digitalPins).forEach(([pinId, pinState]) => {
+        if (pinState.mode === "OUTPUT" && pinState.value === 1) {
+          highSources.push(`${arduino.id}:${pinId}`);
+        }
+      });
+    });
+
+    // Compute all handles reachable from HIGH sources
+    const reachableFromHigh = reachableFromSources(highSources, graph);
+
+    // Find all battery minus terminals in this component
+    const batteryMinusKeys = new Set<string>();
+    batteries.forEach((battery) => {
+      batteryMinusKeys.add(`${battery.id}:minus`);
+    });
+
+    // Check each LED to see if it can be powered by Arduino pin signals
+    const leds = componentNodes.filter((n) => n.type === "led");
+    leds.forEach((led) => {
+      const anodeKey = `${led.id}:anode`;
+      const cathodeKey = `${led.id}:cathode`;
+
+      // LED is powered if:
+      // - Anode is reachable from any HIGH source
+      // - Cathode can reach any battery minus terminal
+      if (
+        reachableFromHigh.has(anodeKey) &&
+        canReachAny(batteryMinusKeys, cathodeKey, graph)
+      ) {
+        allNodesInCompletePaths.add(led.id);
+      }
+    });
   });
 
   // Derive state for each node using its electrical definition
