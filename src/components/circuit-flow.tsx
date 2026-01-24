@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from "react";
-import { DownloadIcon, ToolCaseIcon, UploadIcon, MenuIcon } from "lucide-react";
+import { ToolCaseIcon } from "lucide-react";
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -7,7 +6,6 @@ import {
   Background,
   Controls,
   BackgroundVariant,
-  useReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
@@ -23,28 +21,15 @@ import {
   SheetTrigger,
 } from "./ui/sheet";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import {
   useNodes,
   useEdges,
   useReactFlowCallbacks,
   useIsPanelOpen,
   useSetPanelOpen,
   useCircuitActions,
-  useSetNodes,
-  useSetEdges,
 } from "@/hooks/use-circuit";
-import { downloadTextFile } from "@/persistence/download";
-import {
-  serializeCircuitFile,
-  parseCircuitFile,
-  CircuitFileParseError,
-} from "@/persistence/circuit-file";
 import { useTheme } from "./providers/theme-provider";
+import AppMenu from "./app-menu";
 
 const edgeTypes = {
   default: DataEdge,
@@ -62,93 +47,11 @@ function CircuitFlowInner() {
   // Zustand store hooks
   const nodes = useNodes();
   const edges = useEdges();
-  const setNodes = useSetNodes();
-  const setEdges = useSetEdges();
   const { onNodesChange, onEdgesChange, onConnect } = useReactFlowCallbacks();
   const isPanelOpen = useIsPanelOpen();
   const setPanelOpen = useSetPanelOpen();
-  const { addNode, logConnections, runSimulation } = useCircuitActions();
+  const { addNode } = useCircuitActions();
   const { theme } = useTheme();
-
-  // React Flow instance for toObject() and setViewport()
-  const { toObject, setViewport } = useReactFlow();
-
-  // File input ref for import
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Import error state
-  const [importError, setImportError] = useState<string | null>(null);
-
-  // Auto-log connections every 10 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      logConnections();
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, [logConnections]);
-
-  // Clear import error after 5 seconds
-  useEffect(() => {
-    if (importError) {
-      const timeout = setTimeout(() => setImportError(null), 5000);
-      return () => clearTimeout(timeout);
-    }
-  }, [importError]);
-
-  // Export handler
-  const handleExport = () => {
-    const flow = toObject();
-    const circuitFile = serializeCircuitFile(flow);
-    const json = JSON.stringify(circuitFile, null, 2);
-    const filename = `diagram-${Date.now()}.flowjx`;
-
-    downloadTextFile({
-      filename,
-      text: json,
-      mimeType: "application/json",
-    });
-  };
-
-  // Import handler
-  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    try {
-      const text = await file.text();
-      const circuitFile = parseCircuitFile(text);
-
-      // Restore nodes and edges
-      setNodes(circuitFile.flow.nodes || []);
-      setEdges(circuitFile.flow.edges || []);
-
-      // Restore viewport with defaults if missing
-      const viewport = circuitFile.flow.viewport || { x: 0, y: 0, zoom: 1 };
-      setViewport(viewport);
-
-      // Run simulation to update LED states
-      runSimulation();
-
-      setImportError(null);
-    } catch (error) {
-      if (error instanceof CircuitFileParseError) {
-        setImportError(error.message);
-      } else {
-        setImportError("Failed to load circuit file");
-      }
-    } finally {
-      // Reset file input so the same file can be imported again
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
-  };
-
-  // Trigger file input click
-  const handleImportClick = () => {
-    fileInputRef.current?.click();
-  };
 
   return (
     <div className="h-screen w-screen">
@@ -202,46 +105,7 @@ function CircuitFlowInner() {
 
         {/* File Menu - Top Right */}
         <Panel position="top-right">
-          <div className="flex flex-col gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  className="shadow-lg"
-                  size="icon"
-                  variant="secondary"
-                  title="File menu"
-                >
-                  <MenuIcon />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleExport}>
-                  <DownloadIcon />
-                  Export
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleImportClick}>
-                  <UploadIcon />
-                  Import
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Hidden File Input */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".flowjx,application/json"
-              onChange={handleImport}
-              style={{ display: "none" }}
-            />
-
-            {/* Import Error Message */}
-            {importError && (
-              <div className="bg-red-500 text-white text-xs p-2 rounded shadow-lg max-w-[200px]">
-                {importError}
-              </div>
-            )}
-          </div>
+          <AppMenu />
         </Panel>
       </ReactFlow>
     </div>
