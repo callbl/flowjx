@@ -13,8 +13,10 @@ import {
   type Node,
 } from "@xyflow/react";
 import { Button } from "./ui/button";
-import { ColorSelector, DEFAULT_EDGE_COLOR } from "./color-selector";
+import { ColorSelector } from "./color-selector";
+import { PathSelector } from "./path-selector";
 import { useCircuitActions } from "@/hooks/use-circuit";
+import { DEFAULT_EDGE_COLOR } from "@/lib/constants";
 
 export type DataEdge<T extends Node = Node> = Edge<{
   /**
@@ -32,7 +34,7 @@ export type DataEdge<T extends Node = Node> = Edge<{
    *
    * If not provided, this defaults to `"bezier"`.
    */
-  path?: "bezier" | "smoothstep" | "step" | "straight";
+  pathType?: "bezier" | "smoothstep" | "step" | "straight";
   /**
    * The color of the edge. If not provided, defaults to foreground color.
    */
@@ -40,7 +42,7 @@ export type DataEdge<T extends Node = Node> = Edge<{
 }>;
 
 export function DataEdge({
-  data = { path: "bezier" },
+  data = {},
   id,
   markerEnd,
   selected,
@@ -55,8 +57,9 @@ export function DataEdge({
 }: EdgeProps<DataEdge>) {
   const { deleteEdge, updateEdgeData } = useCircuitActions();
   const nodeData = useStore((state) => state.nodeLookup.get(source)?.data);
+  const pathType = data.pathType || "bezier";
   const [edgePath, labelX, labelY] = getPath({
-    type: data.path || "bezier",
+    type: pathType,
     sourceX,
     sourceY,
     sourcePosition,
@@ -89,6 +92,12 @@ export function DataEdge({
 
   const handleColorChange = (color: string) => {
     updateEdgeData(id, { color });
+  };
+
+  const handlePathChange = (
+    pathType: "bezier" | "smoothstep" | "step" | "straight",
+  ) => {
+    updateEdgeData(id, { pathType });
   };
 
   const labelTransform = `translate(${labelX}px,${labelY}px) translate(-50%, -50%)`;
@@ -130,6 +139,11 @@ export function DataEdge({
             <ColorSelector
               selectedColor={edgeColor}
               onColorChange={handleColorChange}
+            />
+            <div className="h-4 w-px bg-border mx-0.5" />
+            <PathSelector
+              selectedPath={pathType}
+              onPathChange={handlePathChange}
             />
             <div className="h-4 w-px bg-border mx-0.5" />
             <Button
