@@ -3,12 +3,12 @@ import type {
   InternalEdge,
   TraversalContext,
 } from "@/circuit/catalog/types";
-import { arduinoUnoNodeConfig } from "@/components/nodes/config";
 
 export interface ArduinoUnoData {
   label: string;
   isPowered: boolean;
   onboardLedPowered?: boolean;
+  digitalPins?: Record<string, { mode: "INPUT" | "OUTPUT"; value: 0 | 1 }>;
 }
 
 /**

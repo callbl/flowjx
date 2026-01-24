@@ -69,6 +69,7 @@ export const NODE_CATALOG = {
       label,
       isPowered: false,
       onboardLedPowered: false,
+      digitalPins: {},
     }),
     electrical: arduinoUnoElectrical,
   } satisfies NodeCatalogEntry<ArduinoUnoData>,

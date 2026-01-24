@@ -659,8 +659,8 @@ export const arduinoUnoNodeConfig: NodeConfig = {
       description: "Digital I/O pin 13 - built-in LED, SPI SCK",
     },
   ],
-  width: 364,
-  height: 400,
+  width: 500,
+  height: 300,
 };
 
 /**

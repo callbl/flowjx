@@ -24,7 +24,14 @@ export function BlueprintNode({
   config,
   children,
 }: BlueprintNodeProps) {
-  const { title, subtitle, icon: Icon, handles, width = 200 } = config;
+  const {
+    title,
+    subtitle,
+    icon: Icon,
+    handles,
+    width = 200,
+    height = 256,
+  } = config;
 
   return (
     <>
@@ -37,6 +44,7 @@ export function BlueprintNode({
           )}
           style={{
             width: `${width}px`,
+            minHeight: `${height}px`,
             borderWidth: 2,
           }}
         >
