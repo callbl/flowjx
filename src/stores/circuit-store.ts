@@ -12,11 +12,15 @@ import {
   addEdge as addReactFlowEdge,
 } from "@xyflow/react";
 import { simulateCircuit } from "@/lib/circuit-simulation";
-import { NODE_CATALOG, createDefaultNode } from "@/circuit/catalog";
-import type { ButtonData } from "@/circuit/catalog";
+import { ArduinoInterpreter } from "@/lib/arduino-interpreter";
+import type {
+  BatteryData,
+  LedData,
+  ButtonData,
+  ArduinoUnoData,
+} from "@/components/circuit-flow";
 
-// Derive EquipmentType from catalog keys
-export type EquipmentType = keyof typeof NODE_CATALOG;
+export type EquipmentType = "battery" | "led" | "button" | "arduinoUno";
 
 export type EdgeData = {
   color?: string;
@@ -29,6 +33,7 @@ interface CircuitState {
   edges: Edge[];
   poweredLeds: Set<string>;
   isPanelOpen: boolean;
+  arduinoInterpreters: Map<string, ArduinoInterpreter>;
 
   // Node Actions
   addNode: (type: EquipmentType) => void;
@@ -48,6 +53,7 @@ interface CircuitState {
 
   // Simulation
   runSimulation: () => void;
+  runArduinoSimulation: () => void;
 
   // ReactFlow Integration
   onNodesChange: OnNodesChange;
@@ -61,6 +67,17 @@ interface CircuitState {
   logConnections: () => void;
 }
 
+const equipmentItems: Array<{
+  type: EquipmentType;
+  label: string;
+  icon: string;
+}> = [
+  { type: "battery", label: "Battery", icon: "🔋" },
+  { type: "led", label: "LED", icon: "💡" },
+  { type: "button", label: "Button", icon: "🔘" },
+  { type: "arduinoUno", label: "Arduino Uno", icon: "🎛️" },
+];
+
 export const useCircuitStore = create<CircuitState>()(
   devtools(
     persist(
@@ -70,10 +87,14 @@ export const useCircuitStore = create<CircuitState>()(
         edges: [],
         poweredLeds: new Set(),
         isPanelOpen: false,
+        arduinoInterpreters: new Map(),
 
         // Node Actions
         addNode: (type: EquipmentType) => {
           const { nodes } = get();
+          const id = crypto.randomUUID();
+          const label =
+            equipmentItems.find((item) => item.type === type)?.label || type;
 
           // Position node with offset based on current node count
           const position = {
@@ -81,8 +102,42 @@ export const useCircuitStore = create<CircuitState>()(
             y: 100 + nodes.length * 20,
           };
 
-          // Create node using catalog defaults
-          const newNode = createDefaultNode({ type, position });
+          // Create node data based on type
+          let data: BatteryData | LedData | ButtonData | ArduinoUnoData;
+
+          switch (type) {
+            case "battery":
+              data = { label, voltage: 5 };
+              break;
+            case "led":
+              data = { label, isPowered: false };
+              break;
+            case "button":
+              data = {
+                label,
+                isClosed: false,
+              };
+              break;
+            case "arduinoUno":
+              data = { 
+                label,
+                code: undefined,
+                isRunning: false,
+                serialOutput: [],
+                pinStates: new Map(),
+              };
+              // Create interpreter for this Arduino
+              const { arduinoInterpreters } = get();
+              arduinoInterpreters.set(id, new ArduinoInterpreter());
+              break;
+          }
+
+          const newNode: Node = {
+            id,
+            type,
+            position,
+            data,
+          };
 
           set({
             nodes: [...nodes, newNode],
@@ -94,7 +149,14 @@ export const useCircuitStore = create<CircuitState>()(
         },
 
         deleteNode: (nodeId: string) => {
-          const { nodes, edges } = get();
+          const { nodes, edges, arduinoInterpreters } = get();
+
+          // Clean up Arduino interpreter if it exists
+          const interpreter = arduinoInterpreters.get(nodeId);
+          if (interpreter) {
+            interpreter.stop();
+            arduinoInterpreters.delete(nodeId);
+          }
 
           // Remove node and connected edges
           const updatedNodes = nodes.filter((node) => node.id !== nodeId);
@@ -128,6 +190,17 @@ export const useCircuitStore = create<CircuitState>()(
             selected: true, // Select the new duplicate
           };
 
+          // If duplicating Arduino, create new interpreter
+          if (nodeToDuplicate.type === "arduinoUno") {
+            const { arduinoInterpreters } = get();
+            arduinoInterpreters.set(newId, new ArduinoInterpreter());
+            // Reset running state for duplicate
+            newNode.data = {
+              ...newNode.data,
+              isRunning: false,
+            };
+          }
+
           // Deselect all other nodes (including the original)
           const updatedNodes = nodes.map((node) => ({
             ...node,
@@ -143,16 +216,43 @@ export const useCircuitStore = create<CircuitState>()(
         },
 
         updateNodeData: <T>(nodeId: string, data: Partial<T>) => {
-          const { nodes } = get();
+          const { nodes, arduinoInterpreters } = get();
 
           const updatedNodes = nodes.map((node) => {
             if (node.id === nodeId) {
+              const newData = {
+                ...node.data,
+                ...data,
+              };
+
+              // Handle Arduino code updates
+              if (node.type === "arduinoUno") {
+                const arduinoData = data as Partial<ArduinoUnoData>;
+                const interpreter = arduinoInterpreters.get(nodeId);
+
+                if (interpreter) {
+                  // Handle running state changes
+                  if (arduinoData.isRunning !== undefined) {
+                    if (arduinoData.isRunning && arduinoData.code) {
+                      interpreter.start(arduinoData.code);
+                    } else if (!arduinoData.isRunning) {
+                      interpreter.stop();
+                    }
+                  }
+
+                  // Handle code updates while running
+                  if (
+                    arduinoData.code !== undefined &&
+                    (node.data as ArduinoUnoData).isRunning
+                  ) {
+                    interpreter.start(arduinoData.code);
+                  }
+                }
+              }
+
               return {
                 ...node,
-                data: {
-                  ...node.data,
-                  ...data,
-                },
+                data: newData,
               };
             }
             return node;
@@ -225,13 +325,12 @@ export const useCircuitStore = create<CircuitState>()(
 
           const updatedNodes = nodes.map((node) => {
             if (node.id === nodeId && node.type === "button") {
-              const buttonData = node.data as unknown as ButtonData;
               return {
                 ...node,
                 data: {
-                  ...buttonData,
-                  isClosed: !buttonData.isClosed,
-                },
+                  ...node.data,
+                  isClosed: !(node.data as ButtonData).isClosed,
+                } as ButtonData,
               };
             }
             return node;
@@ -245,17 +344,17 @@ export const useCircuitStore = create<CircuitState>()(
 
         // Simulation
         runSimulation: () => {
+          // First run Arduino simulation to update pin states
+          get().runArduinoSimulation();
+
+          // Then run circuit simulation
           const { nodes, edges } = get();
           const updatedNodes = simulateCircuit(nodes, edges);
 
           // Extract powered LEDs for potential UI indicators
           const poweredLeds = new Set<string>();
           updatedNodes.forEach((node) => {
-            if (
-              node.type === "led" &&
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (node.data as any).isPowered
-            ) {
+            if (node.type === "led" && (node.data as LedData).isPowered) {
               poweredLeds.add(node.id);
             }
           });
@@ -264,6 +363,42 @@ export const useCircuitStore = create<CircuitState>()(
             nodes: updatedNodes,
             poweredLeds,
           });
+        },
+
+        runArduinoSimulation: () => {
+          const { nodes, arduinoInterpreters } = get();
+
+          // Update all Arduino nodes with their interpreter states
+          const updatedNodes = nodes.map((node) => {
+            if (node.type === "arduinoUno") {
+              const interpreter = arduinoInterpreters.get(node.id);
+              if (interpreter && (node.data as ArduinoUnoData).isRunning) {
+                const state = interpreter.getState();
+
+                // Convert Map to plain object for React state
+                const pinStates = new Map<string, "HIGH" | "LOW" | number>();
+                state.digitalPins.forEach((pinData, pinNum) => {
+                  // Map pin numbers to pin IDs (D0-D13)
+                  const pinId = `D${pinNum}`;
+                  if (pinData.mode === "OUTPUT") {
+                    pinStates.set(pinId, pinData.value);
+                  }
+                });
+
+                return {
+                  ...node,
+                  data: {
+                    ...node.data,
+                    serialOutput: state.serialOutput,
+                    pinStates,
+                  } as ArduinoUnoData,
+                };
+              }
+            }
+            return node;
+          });
+
+          set({ nodes: updatedNodes });
         },
 
         // ReactFlow Integration
@@ -345,3 +480,15 @@ export const useCircuitStore = create<CircuitState>()(
     { name: "CircuitStore" },
   ),
 );
+
+// Run Arduino simulation periodically (every 100ms) for all running Arduinos
+setInterval(() => {
+  const state = useCircuitStore.getState();
+  const hasRunningArduino = state.nodes.some(
+    (node) => node.type === "arduinoUno" && (node.data as ArduinoUnoData).isRunning
+  );
+
+  if (hasRunningArduino) {
+    state.runArduinoSimulation();
+  }
+}, 100);
