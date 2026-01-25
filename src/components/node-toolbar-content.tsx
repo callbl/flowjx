@@ -1,7 +1,6 @@
 import { Copy, Trash2 } from "lucide-react";
 import { NodeToolbar, Position } from "@xyflow/react";
 import { Button } from "./ui/button";
-import { ColorSelector } from "./color-selector";
 import {
   Select,
   SelectContent,
@@ -11,6 +10,7 @@ import {
 } from "./ui/select";
 import { useCircuitActions, useNode } from "@/hooks/use-circuit";
 import type { LedData, ArduinoUnoData } from "@/circuit/catalog";
+import LedToolbar from "./toolbars/led-toolbar";
 
 type NodeToolbarContentProps = {
   nodeId: string;
@@ -28,10 +28,6 @@ export function NodeToolbarContent({ nodeId }: NodeToolbarContentProps) {
 
   const handleDuplicate = () => {
     duplicateNode(nodeId);
-  };
-
-  const handleColorChange = (color: string) => {
-    updateNodeData<LedData>(nodeId, { color });
   };
 
   // Arduino pin control handlers
@@ -70,13 +66,7 @@ export function NodeToolbarContent({ nodeId }: NodeToolbarContentProps) {
       className="flex items-center justify-center gap-1 bg-background border rounded-md shadow-lg p-1"
     >
       {isLed && (
-        <>
-          <ColorSelector
-            selectedColor={(node.data as unknown as LedData).color}
-            onColorChange={handleColorChange}
-          />
-          <div className="h-4 w-px bg-border mx-0.5" />
-        </>
+        <LedToolbar nodeId={nodeId} data={node.data as unknown as LedData} />
       )}
       {isArduino && (
         <>
