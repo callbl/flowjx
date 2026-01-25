@@ -42,6 +42,7 @@ export const NODE_CATALOG = {
     defaults: (label: string): LedData => ({
       label,
       isPowered: false,
+      color: "#ef4444",
     }),
     electrical: ledElectrical,
   } satisfies NodeCatalogEntry<LedData>,
