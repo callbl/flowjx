@@ -111,12 +111,20 @@ export function ArduinoEditor({ isOpen, onClose }: ArduinoEditorProps) {
 
           {/* Board Selector */}
           <Select.Root value={boardType} onValueChange={handleBoardChange}>
-            <Select.Trigger className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+            <Select.Trigger
+              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              aria-label="Select board type"
+            >
               <Select.Value />
               <ChevronDown className="w-4 h-4 text-gray-500" />
             </Select.Trigger>
             <Select.Portal>
-              <Select.Content className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden z-50">
+              <Select.Content
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden z-[60]"
+                position="popper"
+                side="bottom"
+                align="start"
+              >
                 <Select.Viewport>
                   <Select.Item
                     value="arduino-uno"
@@ -137,12 +145,20 @@ export function ArduinoEditor({ isOpen, onClose }: ArduinoEditorProps) {
 
           {/* Examples Selector */}
           <Select.Root onValueChange={handleExampleSelect}>
-            <Select.Trigger className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+            <Select.Trigger
+              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              aria-label="Select code example"
+            >
               <span>Examples</span>
               <ChevronDown className="w-4 h-4 text-gray-500" />
             </Select.Trigger>
             <Select.Portal>
-              <Select.Content className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden z-50 max-h-96 overflow-y-auto">
+              <Select.Content
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden z-[60] max-h-96 overflow-y-auto"
+                position="popper"
+                side="bottom"
+                align="start"
+              >
                 <Select.Viewport>
                   {Object.entries(examplesByCategory).map(([category, examples]) => (
                     <Select.Group key={category}>

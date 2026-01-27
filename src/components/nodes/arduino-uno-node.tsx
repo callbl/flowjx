@@ -1,11 +1,37 @@
+import React from "react";
 import { type NodeProps } from "@xyflow/react";
 import type { ArduinoUnoData } from "@/circuit/catalog";
 import { BlueprintNode } from "./blueprint-node";
 import { arduinoUnoNodeConfig } from "./config";
+import { useArduinoStore } from "@/arduino/store";
 
 export function ArduinoUnoNode(props: NodeProps) {
   const data = props.data as unknown as ArduinoUnoData;
   const isPowered = data?.isPowered || false;
+
+  // Get Arduino runtime state to show TX/RX and pin 13 LED
+  const isRunning = useArduinoStore?.((state) => state.isRunning) || false;
+  const pinStates = useArduinoStore?.((state) => state.pinStates) || new Map();
+
+  // Check if pin 13 is HIGH
+  const pin13State = pinStates.get('d13');
+  const pin13High = pin13State?.value === 1 || pin13State?.value === 255;
+
+  // TX/RX blink simulation when running
+  const [txBlink, setTxBlink] = React.useState(false);
+  const [rxBlink, setRxBlink] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!isRunning) return;
+
+    // Simulate TX/RX activity when running
+    const interval = setInterval(() => {
+      setTxBlink(Math.random() > 0.7);
+      setRxBlink(Math.random() > 0.8);
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [isRunning]);
 
   return (
     <BlueprintNode {...props} config={arduinoUnoNodeConfig}>
@@ -27,12 +53,39 @@ export function ArduinoUnoNode(props: NodeProps) {
                 </div>
               </div>
 
-              {/* Power LED - glows when powered */}
+              {/* Power LED - glows when powered OR running */}
               <div
                 className={`absolute top-6 left-4 w-2 h-2 rounded-full transition-all duration-300 ${
-                  isPowered
+                  isPowered || isRunning
                     ? "bg-green-400 shadow-[0_0_8px_#4ade80,0_0_16px_#4ade80]"
                     : "bg-green-900 shadow-none"
+                }`}
+              />
+
+              {/* Pin 13 LED - reflects actual pin state */}
+              <div
+                className={`absolute top-6 left-8 w-2 h-2 rounded-full transition-all duration-100 ${
+                  pin13High
+                    ? "bg-orange-400 shadow-[0_0_8px_#fb923c,0_0_12px_#fb923c]"
+                    : "bg-orange-900 shadow-none"
+                }`}
+              />
+
+              {/* TX LED - blinks during serial transmission */}
+              <div
+                className={`absolute top-10 left-4 w-1.5 h-1.5 rounded-full transition-all duration-75 ${
+                  txBlink && isRunning
+                    ? "bg-yellow-400 shadow-[0_0_6px_#fbbf24]"
+                    : "bg-yellow-900 shadow-none"
+                }`}
+              />
+
+              {/* RX LED - blinks during serial reception */}
+              <div
+                className={`absolute top-10 left-7 w-1.5 h-1.5 rounded-full transition-all duration-75 ${
+                  rxBlink && isRunning
+                    ? "bg-yellow-400 shadow-[0_0_6px_#fbbf24]"
+                    : "bg-yellow-900 shadow-none"
                 }`}
               />
 
