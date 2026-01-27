@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Editor from "@monaco-editor/react";
-import { useTheme } from "@/components/theme-provider";
+import { useTheme } from "./providers/theme-provider";
 import { useArduinoStore } from "@/arduino/store";
 import { useArduinoIntegration } from "@/hooks/use-arduino-integration";
 import { getExamplesByCategory } from "@/arduino/examples";
