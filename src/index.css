@@ -121,3 +121,12 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* React Flow: Make edges render above nodes */
+.react-flow__edges {
+  z-index: 10 !important;
+}
+
+.react-flow__nodes {
+  z-index: 5 !important;
+}

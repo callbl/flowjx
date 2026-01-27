@@ -30,6 +30,18 @@ export function useArduinoIntegration() {
 
   useEffect(() => {
     if (!runtime || !isRunning) {
+      // When Arduino stops, clear arduinoControlled flag from all components
+      if (!isRunning) {
+        const nodes = useCircuitStore.getState().nodes;
+        const updateNodeData = useCircuitStore.getState().updateNodeData;
+
+        nodes.forEach((node) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          if ((node.data as any)?.arduinoControlled) {
+            updateNodeData(node.id, { arduinoControlled: false });
+          }
+        });
+      }
       return;
     }
 
@@ -137,11 +149,13 @@ export function useArduinoIntegration() {
           currentUpdateNodeData(id, {
             isPowered: pinState.pwmValue > 0,
             brightness: pinState.pwmValue / 255,
+            arduinoControlled: true, // Mark as Arduino-controlled
           });
         } else {
           currentUpdateNodeData(id, {
             isPowered: pinState.value > 0,
             brightness: 1,
+            arduinoControlled: true, // Mark as Arduino-controlled
           });
         }
         break;
@@ -157,6 +171,7 @@ export function useArduinoIntegration() {
             red: pinState.pwmValue,
             green: 0,
             blue: 0,
+            arduinoControlled: true,
           });
         }
         break;
@@ -169,12 +184,14 @@ export function useArduinoIntegration() {
             isRunning: speed > 0,
             speed,
             direction: speed > 0 ? "cw" : "stopped",
+            arduinoControlled: true,
           });
         } else {
           currentUpdateNodeData(id, {
             isRunning: pinState.value > 0,
             speed: pinState.value > 0 ? 100 : 0,
             direction: pinState.value > 0 ? "cw" : "stopped",
+            arduinoControlled: true,
           });
         }
         break;
@@ -188,6 +205,7 @@ export function useArduinoIntegration() {
           currentUpdateNodeData(id, {
             angle,
             isPowered: true,
+            arduinoControlled: true,
           });
         }
         break;
@@ -197,6 +215,7 @@ export function useArduinoIntegration() {
         currentUpdateNodeData(id, {
           isActive: pinState.value > 0,
           frequency: pinState.value > 0 ? 1000 : 0,
+          arduinoControlled: true,
         });
         break;
 
@@ -204,6 +223,7 @@ export function useArduinoIntegration() {
         // Digital output → relay state
         currentUpdateNodeData(id, {
           isActivated: pinState.value > 0,
+          arduinoControlled: true,
         });
         break;
 
@@ -212,6 +232,7 @@ export function useArduinoIntegration() {
         // Just track power state
         currentUpdateNodeData(id, {
           isPowered: pinState.value > 0,
+          arduinoControlled: true,
         });
         break;
 
@@ -220,6 +241,7 @@ export function useArduinoIntegration() {
         // Simplified: HIGH → show segment
         currentUpdateNodeData(id, {
           isPowered: pinState.value > 0,
+          arduinoControlled: true,
         });
         break;
 
@@ -228,6 +250,7 @@ export function useArduinoIntegration() {
         if (data && "isPowered" in data) {
           currentUpdateNodeData(id, {
             isPowered: pinState.value > 0,
+            arduinoControlled: true,
           });
         }
         break;
