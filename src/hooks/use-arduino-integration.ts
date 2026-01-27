@@ -100,13 +100,6 @@ export function useArduinoIntegration() {
     // Find components connected to this pin
     const connectedComponents = findConnectedComponents(mcuNode.id, pinId, currentNodes);
 
-    console.log(`[Arduino] Pin ${pinId} changed:`, {
-      mode: pinState.mode,
-      value: pinState.value,
-      pwmValue: pinState.pwmValue,
-      connectedComponents: connectedComponents.map(c => ({ type: c.type, id: c.id }))
-    });
-
     connectedComponents.forEach((component) => {
       updateComponentFromPin(component, pinState, currentUpdateNodeData);
     });
