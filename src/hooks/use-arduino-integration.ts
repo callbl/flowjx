@@ -38,11 +38,28 @@ export function useArduinoIntegration() {
         nodes.forEach((node) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           if ((node.data as any)?.arduinoControlled) {
-            updateNodeData(node.id, { arduinoControlled: false });
+            updateNodeData(node.id, {
+              arduinoControlled: false,
+              isPowered: false, // Reset powered state
+            });
           }
         });
       }
       return;
+    }
+
+    // Initialize all connected components with Arduino control when starting
+    const currentNodes = useCircuitStore.getState().nodes;
+    const mcuNode = currentNodes.find(
+      (node) => node.type === "arduino-uno" || node.type === "esp32"
+    );
+
+    if (mcuNode) {
+      // Find all components connected to Arduino and set initial state
+      const initialPinStates = runtime.getAllPinStates();
+      initialPinStates.forEach((pinState, pinId) => {
+        handlePinChange(pinId, pinState, currentNodes, useCircuitStore.getState().updateNodeData);
+      });
     }
 
     // Set up pin change monitoring
@@ -56,11 +73,12 @@ export function useArduinoIntegration() {
       currentPinStates.forEach((pinState, pinId) => {
         const prevState = prevPinStatesRef.current.get(pinId);
 
-        // Check if pin state changed
+        // Check if pin state changed OR if this is a new Arduino run
         if (
           !prevState ||
           prevState.value !== pinState.value ||
-          prevState.mode !== pinState.mode
+          prevState.mode !== pinState.mode ||
+          prevState.pwmValue !== pinState.pwmValue
         ) {
           handlePinChange(pinId, pinState, currentNodes, currentUpdateNodeData);
         }
