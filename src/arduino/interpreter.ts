@@ -224,26 +224,96 @@ export class ArduinoInterpreter {
    * Parse program structure to extract setup(), loop(), and global code
    */
   private parseProgram(code: string): { globals: string; setup: string; loop: string } {
-    const setupMatch = code.match(/function\s+setup\s*\(\s*\)\s*{([^]*?)^}/m);
-    const loopMatch = code.match(/function\s+loop\s*\(\s*\)\s*{([^]*?)^}/m);
+    // Find setup() function with proper brace matching
+    const setupBody = this.extractFunctionBody(code, "setup");
+    const loopBody = this.extractFunctionBody(code, "loop");
 
-    if (!setupMatch) {
+    if (setupBody === null) {
       throw new Error("setup() function not found");
     }
-    if (!loopMatch) {
+    if (loopBody === null) {
       throw new Error("loop() function not found");
     }
 
-    const setup = setupMatch[1].trim();
-    const loop = loopMatch[1].trim();
-
     // Extract global code (everything outside setup and loop)
     let globals = code;
-    globals = globals.replace(/function\s+setup\s*\(\s*\)\s*{[^]*?^}/m, "");
-    globals = globals.replace(/function\s+loop\s*\(\s*\)\s*{[^]*?^}/m, "");
+
+    // Remove setup function
+    const setupStart = code.indexOf("function setup");
+    if (setupStart !== -1) {
+      const setupEnd = this.findMatchingBrace(code, setupStart);
+      if (setupEnd !== -1) {
+        globals = globals.substring(0, setupStart) + globals.substring(setupEnd + 1);
+      }
+    }
+
+    // Remove loop function
+    const loopStart = globals.indexOf("function loop");
+    if (loopStart !== -1) {
+      const loopEnd = this.findMatchingBrace(globals, loopStart);
+      if (loopEnd !== -1) {
+        globals = globals.substring(0, loopStart) + globals.substring(loopEnd + 1);
+      }
+    }
+
     globals = globals.trim();
 
-    return { globals, setup, loop };
+    return { globals, setup: setupBody, loop: loopBody };
+  }
+
+  /**
+   * Extract function body with proper brace matching
+   */
+  private extractFunctionBody(code: string, functionName: string): string | null {
+    const funcRegex = new RegExp(`function\\s+${functionName}\\s*\\(\\s*\\)\\s*\\{`);
+    const match = code.match(funcRegex);
+
+    if (!match || match.index === undefined) {
+      return null;
+    }
+
+    const startIndex = match.index + match[0].length;
+    const braceIndex = match.index + match[0].lastIndexOf("{");
+
+    let braceCount = 1;
+    let i = startIndex;
+
+    while (i < code.length && braceCount > 0) {
+      if (code[i] === "{") {
+        braceCount++;
+      } else if (code[i] === "}") {
+        braceCount--;
+      }
+      i++;
+    }
+
+    if (braceCount !== 0) {
+      return null; // Unmatched braces
+    }
+
+    return code.substring(startIndex, i - 1).trim();
+  }
+
+  /**
+   * Find the matching closing brace for a function
+   */
+  private findMatchingBrace(code: string, functionStart: number): number {
+    const openBrace = code.indexOf("{", functionStart);
+    if (openBrace === -1) return -1;
+
+    let braceCount = 1;
+    let i = openBrace + 1;
+
+    while (i < code.length && braceCount > 0) {
+      if (code[i] === "{") {
+        braceCount++;
+      } else if (code[i] === "}") {
+        braceCount--;
+      }
+      i++;
+    }
+
+    return braceCount === 0 ? i - 1 : -1;
   }
 
   /**
