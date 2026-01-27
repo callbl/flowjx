@@ -36,17 +36,14 @@ export function ArduinoEditor({ isOpen, onClose }: ArduinoEditorProps) {
   const serialOutput = useArduinoStore((state) => state.serialOutput);
   const compileResult = useArduinoStore((state) => state.compileResult);
 
-  // Arduino store actions
-  const { setCode, setBoardType, compile, start, stop, reset, clearSerialOutput } =
-    useArduinoStore((state) => ({
-      setCode: state.setCode,
-      setBoardType: state.setBoardType,
-      compile: state.compile,
-      start: state.start,
-      stop: state.stop,
-      reset: state.reset,
-      clearSerialOutput: state.clearSerialOutput,
-    }));
+  // Arduino store actions - use stable selectors to avoid re-renders
+  const setCode = useArduinoStore((state) => state.setCode);
+  const setBoardType = useArduinoStore((state) => state.setBoardType);
+  const compile = useArduinoStore((state) => state.compile);
+  const start = useArduinoStore((state) => state.start);
+  const stop = useArduinoStore((state) => state.stop);
+  const reset = useArduinoStore((state) => state.reset);
+  const clearSerialOutput = useArduinoStore((state) => state.clearSerialOutput);
 
   // Enable Arduino-Circuit integration
   useArduinoIntegration();
