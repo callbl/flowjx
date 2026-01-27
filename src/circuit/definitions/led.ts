@@ -8,6 +8,8 @@ export interface LedData {
   label: string;
   isPowered: boolean;
   color?: string;
+  brightness?: number; // 0-1, for PWM control
+  arduinoControlled?: boolean; // True when controlled by Arduino code
 }
 
 /**

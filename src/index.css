@@ -122,11 +122,21 @@
   }
 }
 
-/* React Flow: Make edges render above nodes */
-.react-flow__edges {
-  z-index: 10 !important;
+/* Make connection handles bigger for easier aiming */
+.react-flow__handle {
+  width: 14px !important;
+  height: 14px !important;
+  border: 3px solid white !important;
+  background: #4f46e5 !important;
 }
 
-.react-flow__nodes {
-  z-index: 5 !important;
+.react-flow__handle:hover {
+  width: 18px !important;
+  height: 18px !important;
+  background: #6366f1 !important;
+}
+
+/* Edge routing: smooth curves that avoid sharp angles */
+.react-flow__edge-path {
+  stroke-width: 2.5;
 }

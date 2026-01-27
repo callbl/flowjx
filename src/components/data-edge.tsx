@@ -57,7 +57,7 @@ export function DataEdge({
 }: EdgeProps<DataEdge>) {
   const { deleteEdge, updateEdgeData } = useCircuitActions();
   const nodeData = useStore((state) => state.nodeLookup.get(source)?.data);
-  const pathType = data.pathType || "bezier";
+  const pathType = data.pathType || "smoothstep"; // Default to smoothstep for better routing
   const [edgePath, labelX, labelY] = getPath({
     type: pathType,
     sourceX,
@@ -202,6 +202,8 @@ function getPath({
         targetY,
         sourcePosition,
         targetPosition,
+        borderRadius: 12,
+        offset: 25, // Larger offset to route around components
       });
 
     case "step":
