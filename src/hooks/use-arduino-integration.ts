@@ -38,6 +38,8 @@ export function useArduinoIntegration() {
       if (!runtime || !isRunning) return;
 
       const currentPinStates = runtime.getAllPinStates();
+      const currentNodes = useCircuitStore.getState().nodes;
+      const currentUpdateNodeData = useCircuitStore.getState().updateNodeData;
 
       currentPinStates.forEach((pinState, pinId) => {
         const prevState = prevPinStatesRef.current.get(pinId);
@@ -48,7 +50,7 @@ export function useArduinoIntegration() {
           prevState.value !== pinState.value ||
           prevState.mode !== pinState.mode
         ) {
-          handlePinChange(pinId, pinState);
+          handlePinChange(pinId, pinState, currentNodes, currentUpdateNodeData);
         }
       });
 
@@ -61,14 +63,19 @@ export function useArduinoIntegration() {
     return () => {
       clearInterval(intervalId);
     };
-  }, [runtime, isRunning, nodes, updateNodeData]);
+  }, [runtime, isRunning]);
 
   /**
    * Handle Arduino pin state change → Update connected components
    */
-  const handlePinChange = (pinId: string, pinState: PinRuntimeState) => {
+  const handlePinChange = (
+    pinId: string,
+    pinState: PinRuntimeState,
+    currentNodes: Node[],
+    currentUpdateNodeData: (nodeId: string, data: any) => void
+  ) => {
     // Find MCU node in circuit
-    const mcuNode = nodes.find(
+    const mcuNode = currentNodes.find(
       (node) =>
         node.type === "arduino-uno" || node.type === "esp32"
     );
@@ -76,17 +83,17 @@ export function useArduinoIntegration() {
     if (!mcuNode) return;
 
     // Find components connected to this pin
-    const connectedComponents = findConnectedComponents(mcuNode.id, pinId);
+    const connectedComponents = findConnectedComponents(mcuNode.id, pinId, currentNodes);
 
     connectedComponents.forEach((component) => {
-      updateComponentFromPin(component, pinState);
+      updateComponentFromPin(component, pinState, currentUpdateNodeData);
     });
   };
 
   /**
    * Find components connected to a specific MCU pin
    */
-  const findConnectedComponents = (mcuNodeId: string, pinId: string): Node[] => {
+  const findConnectedComponents = (mcuNodeId: string, pinId: string, currentNodes: Node[]): Node[] => {
     const edges = useCircuitStore.getState().edges;
     const connectedNodes: Node[] = [];
 
@@ -98,10 +105,10 @@ export function useArduinoIntegration() {
 
       // Check if edge connects to this pin
       if (sourceKey === pinKey) {
-        const targetNode = nodes.find((n) => n.id === edge.target);
+        const targetNode = currentNodes.find((n) => n.id === edge.target);
         if (targetNode) connectedNodes.push(targetNode);
       } else if (targetKey === pinKey) {
-        const sourceNode = nodes.find((n) => n.id === edge.source);
+        const sourceNode = currentNodes.find((n) => n.id === edge.source);
         if (sourceNode) connectedNodes.push(sourceNode);
       }
     });
@@ -112,7 +119,11 @@ export function useArduinoIntegration() {
   /**
    * Update component state based on pin output
    */
-  const updateComponentFromPin = (node: Node, pinState: PinRuntimeState) => {
+  const updateComponentFromPin = (
+    node: Node,
+    pinState: PinRuntimeState,
+    currentUpdateNodeData: (nodeId: string, data: any) => void
+  ) => {
     const { type, id, data } = node;
 
     // Output is only valid if pin is in OUTPUT mode
@@ -123,12 +134,12 @@ export function useArduinoIntegration() {
         // Digital: HIGH/LOW → on/off
         // PWM: 0-255 → brightness 0-1
         if (pinState.pwmValue !== undefined) {
-          updateNodeData(id, {
+          currentUpdateNodeData(id, {
             isPowered: pinState.pwmValue > 0,
             brightness: pinState.pwmValue / 255,
           });
         } else {
-          updateNodeData(id, {
+          currentUpdateNodeData(id, {
             isPowered: pinState.value > 0,
             brightness: 1,
           });
@@ -141,7 +152,7 @@ export function useArduinoIntegration() {
         // This is handled by tracking multiple pins
         // For now, simplified single-pin control
         if (pinState.pwmValue !== undefined) {
-          updateNodeData(id, {
+          currentUpdateNodeData(id, {
             isPowered: pinState.pwmValue > 0,
             red: pinState.pwmValue,
             green: 0,
@@ -154,13 +165,13 @@ export function useArduinoIntegration() {
         // PWM value → motor speed
         if (pinState.pwmValue !== undefined) {
           const speed = Math.round((pinState.pwmValue / 255) * 100);
-          updateNodeData(id, {
+          currentUpdateNodeData(id, {
             isRunning: speed > 0,
             speed,
             direction: speed > 0 ? "cw" : "stopped",
           });
         } else {
-          updateNodeData(id, {
+          currentUpdateNodeData(id, {
             isRunning: pinState.value > 0,
             speed: pinState.value > 0 ? 100 : 0,
             direction: pinState.value > 0 ? "cw" : "stopped",
@@ -174,7 +185,7 @@ export function useArduinoIntegration() {
         // We'll map PWM value 0-255 → 0-180°
         if (pinState.pwmValue !== undefined) {
           const angle = Math.round((pinState.pwmValue / 255) * 180);
-          updateNodeData(id, {
+          currentUpdateNodeData(id, {
             angle,
             isPowered: true,
           });
@@ -183,7 +194,7 @@ export function useArduinoIntegration() {
 
       case "buzzer":
         // Digital output → buzzer on/off
-        updateNodeData(id, {
+        currentUpdateNodeData(id, {
           isActive: pinState.value > 0,
           frequency: pinState.value > 0 ? 1000 : 0,
         });
@@ -191,7 +202,7 @@ export function useArduinoIntegration() {
 
       case "relay":
         // Digital output → relay state
-        updateNodeData(id, {
+        currentUpdateNodeData(id, {
           isActivated: pinState.value > 0,
         });
         break;
@@ -199,7 +210,7 @@ export function useArduinoIntegration() {
       case "lcd16x2":
         // LCD updates via library functions (not direct pin control)
         // Just track power state
-        updateNodeData(id, {
+        currentUpdateNodeData(id, {
           isPowered: pinState.value > 0,
         });
         break;
@@ -207,7 +218,7 @@ export function useArduinoIntegration() {
       case "seven-segment":
         // 7-segment typically controlled by 7+ pins
         // Simplified: HIGH → show segment
-        updateNodeData(id, {
+        currentUpdateNodeData(id, {
           isPowered: pinState.value > 0,
         });
         break;
@@ -215,7 +226,7 @@ export function useArduinoIntegration() {
       default:
         // Generic: just track power state
         if (data && "isPowered" in data) {
-          updateNodeData(id, {
+          currentUpdateNodeData(id, {
             isPowered: pinState.value > 0,
           });
         }
@@ -229,13 +240,14 @@ export function useArduinoIntegration() {
   useEffect(() => {
     if (!runtime || !isRunning) return;
 
-    const mcuNode = nodes.find(
+    const currentNodes = useCircuitStore.getState().nodes;
+    const mcuNode = currentNodes.find(
       (node) => node.type === "arduino-uno" || node.type === "esp32"
     );
     if (!mcuNode) return;
 
     // Update Arduino input pins from component states
-    nodes.forEach((node) => {
+    currentNodes.forEach((node) => {
       const { type, data } = node;
 
       // Find pins connected to this component
@@ -245,7 +257,7 @@ export function useArduinoIntegration() {
         updateArduinoPin(pinId, type, data);
       });
     });
-  }, [runtime, isRunning, nodes]);
+  }, [runtime, isRunning]);
 
   /**
    * Find MCU pins connected to a component

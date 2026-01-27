@@ -13,7 +13,7 @@ export class ArduinoRuntime {
   private onPinChange?: PinChangeCallback;
   private onSerialOutput?: (message: string) => void;
   private serialBuffer: string = "";
-  private randomSeed: number = Date.now();
+  private _randomSeedValue: number = Date.now();
 
   // Arduino constants
   public readonly INPUT = 0;
@@ -310,7 +310,7 @@ export class ArduinoRuntime {
    * Seed random number generator (no-op in JavaScript)
    */
   randomSeed(seed: number): void {
-    this.randomSeed = seed;
+    this._randomSeedValue = seed;
     // Note: JavaScript's Math.random() can't be seeded
   }
 
