@@ -125,8 +125,14 @@ void loop() {
         }
 
         if (!compileResult.success || !compileResult.code) {
-          throw new Error(compileResult.error || "Compilation failed");
+          const errorMsg = compileResult.error || "Compilation failed";
+          get().addSerialOutput(`\nCOMPILE ERROR: ${errorMsg}\n`);
+          throw new Error(errorMsg);
         }
+
+        // Log successful compilation
+        console.log("[Arduino] Compilation successful");
+        console.log("[Arduino] Transpiled code:", compileResult.code);
 
         // Stop existing runtime
         if (state.runtime) {
@@ -153,12 +159,14 @@ void loop() {
 
         // Execute program
         try {
+          console.log("[Arduino] Executing program...");
           await runtime.execute(compileResult.code);
+          console.log("[Arduino] Program started successfully");
         } catch (error) {
           set({ isRunning: false });
-          get().addSerialOutput(
-            `\nERROR: ${error instanceof Error ? error.message : "Unknown error"}\n`
-          );
+          const errorMsg = error instanceof Error ? error.message : "Unknown error";
+          console.error("[Arduino] Execution error:", errorMsg);
+          get().addSerialOutput(`\nERROR: ${errorMsg}\n`);
           throw error;
         }
       },
