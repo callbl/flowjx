@@ -97,20 +97,29 @@ export class ArduinoRuntime {
       const executor = new AsyncFunction(...Object.keys(api), code);
 
       // Execute to get setup and loop functions
-      const context = executor(...Object.values(api));
+      // IMPORTANT: AsyncFunction returns a Promise, so we must await it
+      const context = await executor(...Object.values(api));
 
-      if (!context.setup || !context.loop) {
+      console.log("[Runtime] Context received:", context);
+      console.log("[Runtime] context.setup exists:", !!context?.setup);
+      console.log("[Runtime] context.loop exists:", !!context?.loop);
+
+      if (!context || !context.setup || !context.loop) {
         throw new Error("Program must define setup() and loop() functions");
       }
 
       // Run setup once
+      console.log("[Runtime] Running setup()...");
       await context.setup();
+      console.log("[Runtime] setup() completed");
 
       // Start loop
       this.isRunning = true;
+      console.log("[Runtime] Starting loop()...");
       this.runLoop(context.loop);
     } catch (error) {
       this.isRunning = false;
+      console.error("[Runtime] Execute error:", error);
       throw error;
     }
   }
