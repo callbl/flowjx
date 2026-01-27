@@ -271,6 +271,7 @@ export class ArduinoInterpreter {
 
   /**
    * Extract function body with proper brace matching
+   * Handles strings and avoids counting braces inside them
    */
   private extractFunctionBody(code: string, functionName: string): string | null {
     const funcRegex = new RegExp(`function\\s+${functionName}\\s*\\(\\s*\\)\\s*\\{`);
@@ -281,17 +282,35 @@ export class ArduinoInterpreter {
     }
 
     const startIndex = match.index + match[0].length;
-    const braceIndex = match.index + match[0].lastIndexOf("{");
 
     let braceCount = 1;
     let i = startIndex;
+    let inString = false;
+    let stringChar = '';
 
     while (i < code.length && braceCount > 0) {
-      if (code[i] === "{") {
-        braceCount++;
-      } else if (code[i] === "}") {
-        braceCount--;
+      const char = code[i];
+      const prevChar = i > 0 ? code[i - 1] : '';
+
+      // Handle string literals
+      if ((char === '"' || char === "'") && prevChar !== '\\') {
+        if (!inString) {
+          inString = true;
+          stringChar = char;
+        } else if (char === stringChar) {
+          inString = false;
+        }
       }
+
+      // Only count braces outside of strings
+      if (!inString) {
+        if (char === "{") {
+          braceCount++;
+        } else if (char === "}") {
+          braceCount--;
+        }
+      }
+
       i++;
     }
 
@@ -304,6 +323,7 @@ export class ArduinoInterpreter {
 
   /**
    * Find the matching closing brace for a function
+   * Handles strings to avoid counting braces inside them
    */
   private findMatchingBrace(code: string, functionStart: number): number {
     const openBrace = code.indexOf("{", functionStart);
@@ -311,13 +331,32 @@ export class ArduinoInterpreter {
 
     let braceCount = 1;
     let i = openBrace + 1;
+    let inString = false;
+    let stringChar = '';
 
     while (i < code.length && braceCount > 0) {
-      if (code[i] === "{") {
-        braceCount++;
-      } else if (code[i] === "}") {
-        braceCount--;
+      const char = code[i];
+      const prevChar = i > 0 ? code[i - 1] : '';
+
+      // Handle string literals
+      if ((char === '"' || char === "'") && prevChar !== '\\') {
+        if (!inString) {
+          inString = true;
+          stringChar = char;
+        } else if (char === stringChar) {
+          inString = false;
+        }
       }
+
+      // Only count braces outside of strings
+      if (!inString) {
+        if (char === "{") {
+          braceCount++;
+        } else if (char === "}") {
+          braceCount--;
+        }
+      }
+
       i++;
     }
 
