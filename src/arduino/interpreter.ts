@@ -224,14 +224,22 @@ export class ArduinoInterpreter {
    * Parse program structure to extract setup(), loop(), and global code
    */
   private parseProgram(code: string): { globals: string; setup: string; loop: string } {
+    console.log("[Interpreter] Parsing program...");
+    console.log("[Interpreter] Code to parse:", code.substring(0, 200));
+
     // Find setup() function with proper brace matching
     const setupBody = this.extractFunctionBody(code, "setup");
     const loopBody = this.extractFunctionBody(code, "loop");
 
+    console.log("[Interpreter] setup() found:", setupBody !== null);
+    console.log("[Interpreter] loop() found:", loopBody !== null);
+
     if (setupBody === null) {
+      console.error("[Interpreter] Failed to find setup() function");
       throw new Error("setup() function not found");
     }
     if (loopBody === null) {
+      console.error("[Interpreter] Failed to find loop() function");
       throw new Error("loop() function not found");
     }
 
@@ -320,7 +328,7 @@ export class ArduinoInterpreter {
    * Generate executable JavaScript code
    */
   private generateJavaScript(program: { globals: string; setup: string; loop: string }): string {
-    return `
+    const jsCode = `
 // ===== Global Variables and Functions =====
 ${program.globals}
 
@@ -337,5 +345,9 @@ ${program.loop}
 // Return execution context
 return { setup: __setup__, loop: __loop__ };
 `.trim();
+
+    console.log("[Interpreter] Generated JavaScript code:");
+    console.log(jsCode);
+    return jsCode;
   }
 }
