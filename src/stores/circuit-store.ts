@@ -160,8 +160,12 @@ export const useCircuitStore = create<CircuitState>()(
 
           set({ nodes: updatedNodes });
 
-          // Run simulation after data update
-          get().runSimulation();
+          // Skip simulation if this is Arduino control update (performance optimization)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const isArduinoUpdate = (data as any)?.arduinoControlled !== undefined;
+          if (!isArduinoUpdate) {
+            get().runSimulation();
+          }
         },
 
         setNodes: (nodes) => {
