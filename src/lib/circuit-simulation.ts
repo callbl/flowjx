@@ -207,6 +207,12 @@ export function simulateCircuit(
     const catalogEntry = getCatalogEntry(node.type);
     if (!catalogEntry) return node;
 
+    // Skip Arduino-controlled nodes to prevent circuit simulation from overriding Arduino control
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((node.data as any)?.arduinoControlled) {
+      return node;
+    }
+
     // Build traversal context for this node
     const context: TraversalContext = {
       graph: new Map(), // Will be populated below
