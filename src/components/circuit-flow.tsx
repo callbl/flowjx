@@ -1,4 +1,5 @@
-import { ToolCaseIcon } from "lucide-react";
+import { useState } from "react";
+import { ToolCaseIcon, Code2 } from "lucide-react";
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -30,6 +31,7 @@ import {
 import { useTheme } from "./providers/theme-provider";
 import { ZoomSlider } from "./zoom-slider";
 import AppMenu from "./app-menu";
+import { ArduinoEditor } from "./arduino-editor";
 
 const edgeTypes = {
   default: DataEdge,
@@ -52,6 +54,9 @@ function CircuitFlowInner() {
   const setPanelOpen = useSetPanelOpen();
   const { addNode } = useCircuitActions();
   const { theme } = useTheme();
+
+  // Arduino Editor state
+  const [isArduinoEditorOpen, setIsArduinoEditorOpen] = useState(false);
 
   return (
     <div className="h-screen w-screen">
@@ -103,11 +108,30 @@ function CircuitFlowInner() {
           </Sheet>
         </Panel>
 
+        {/* Arduino Editor Button - Top Center */}
+        <Panel position="top-center">
+          <Button
+            onClick={() => setIsArduinoEditorOpen(!isArduinoEditorOpen)}
+            className="shadow-lg"
+            variant={isArduinoEditorOpen ? "default" : "secondary"}
+            size="sm"
+          >
+            <Code2 className="w-4 h-4 mr-2" />
+            Arduino IDE
+          </Button>
+        </Panel>
+
         {/* File Menu - Top Right */}
         <Panel position="top-right">
           <AppMenu />
         </Panel>
       </ReactFlow>
+
+      {/* Arduino Editor Panel */}
+      <ArduinoEditor
+        isOpen={isArduinoEditorOpen}
+        onClose={() => setIsArduinoEditorOpen(false)}
+      />
     </div>
   );
 }
