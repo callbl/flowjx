@@ -21,10 +21,6 @@ import type { PinRuntimeState } from "@/arduino/types";
 export function useArduinoIntegration() {
   const runtime = useArduinoStore((state) => state.runtime);
   const isRunning = useArduinoStore((state) => state.isRunning);
-  const boardType = useArduinoStore((state) => state.boardType);
-
-  const nodes = useCircuitStore((state) => state.nodes);
-  const updateNodeData = useCircuitStore((state) => state.updateNodeData);
 
   const prevPinStatesRef = useRef<Map<string, PinRuntimeState>>(new Map());
 
@@ -280,7 +276,9 @@ export function useArduinoIntegration() {
       const connectedPins = findConnectedPins(mcuNode.id, node.id);
 
       connectedPins.forEach((pinId) => {
-        updateArduinoPin(pinId, type, data);
+        if (pinId && type) {
+          updateArduinoPin(pinId, type, data);
+        }
       });
     });
   }, [runtime, isRunning]);
