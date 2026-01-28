@@ -25,7 +25,7 @@ export class ArduinoRuntime {
   constructor(
     boardConfig: BoardConfig,
     onPinChange?: PinChangeCallback,
-    onSerialOutput?: (message: string) => void
+    onSerialOutput?: (message: string) => void,
   ) {
     this.boardConfig = boardConfig;
     this.onPinChange = onPinChange;
@@ -92,7 +92,9 @@ export class ArduinoRuntime {
     try {
       // Create execution context with API
       const api = this.getAPI();
-      const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+      const AsyncFunction = Object.getPrototypeOf(
+        async function () {},
+      ).constructor;
       const executor = new AsyncFunction(...Object.keys(api), code);
 
       // Execute to get setup and loop functions
@@ -272,7 +274,9 @@ export class ArduinoRuntime {
    * Delay execution in microseconds (minimum 1ms in browser)
    */
   delayMicroseconds(us: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, Math.max(1, us / 1000)));
+    return new Promise((resolve) =>
+      setTimeout(resolve, Math.max(1, us / 1000)),
+    );
   }
 
   /**
@@ -292,7 +296,13 @@ export class ArduinoRuntime {
   /**
    * Map value from one range to another
    */
-  map(value: number, inMin: number, inMax: number, outMin: number, outMax: number): number {
+  map(
+    value: number,
+    inMin: number,
+    inMax: number,
+    outMin: number,
+    outMax: number,
+  ): number {
     return ((value - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin;
   }
 
@@ -317,6 +327,7 @@ export class ArduinoRuntime {
   /**
    * Seed random number generator (no-op in JavaScript)
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   randomSeed(_seed: number): void {
     // Note: JavaScript's Math.random() can't be seeded
     // This is a no-op for Arduino compatibility
@@ -327,9 +338,11 @@ export class ArduinoRuntime {
    */
   private createSerialObject() {
     return {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       begin: (_baudRate: number) => {
         // No-op in browser
       },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       print: (value: any) => {
         const message = String(value);
         this.serialBuffer += message;
@@ -337,6 +350,7 @@ export class ArduinoRuntime {
           this.onSerialOutput(message);
         }
       },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       println: (value: any) => {
         const message = String(value) + "\n";
         this.serialBuffer += message;
@@ -358,6 +372,7 @@ export class ArduinoRuntime {
         this.serialBuffer = "";
         return str;
       },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       write: (value: any) => {
         if (typeof value === "number") {
           this.serialBuffer += String.fromCharCode(value);
