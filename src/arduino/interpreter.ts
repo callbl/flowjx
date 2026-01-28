@@ -5,6 +5,7 @@ import type { TranspileResult, BoardConfig } from "./types";
 export class ArduinoInterpreter {
   private warnings: string[] = [];
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   constructor(_boardConfig: BoardConfig) {
     // Board config may be used in future for board-specific transpilation
   }
@@ -51,7 +52,10 @@ export class ArduinoInterpreter {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown transpilation error",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unknown transpilation error",
       };
     }
   }
@@ -100,7 +104,9 @@ export class ArduinoInterpreter {
         trimmed.startsWith("#endif") ||
         trimmed.startsWith("#else")
       ) {
-        this.warnings.push(`Ignoring conditional compilation directive: ${trimmed}`);
+        this.warnings.push(
+          `Ignoring conditional compilation directive: ${trimmed}`,
+        );
         continue;
       }
 
@@ -168,12 +174,17 @@ export class ArduinoInterpreter {
     code = code.replace(/\bvoid\s+(\w+)\s*\(/g, "function $1(");
 
     // Convert typed functions: int funcName(int x) { → function funcName(x) {
-    code = code.replace(/\b(?:int|long|byte|float|double|boolean|String)\s+(\w+)\s*\(([^)]*)\)/g,
+    code = code.replace(
+      /\b(?:int|long|byte|float|double|boolean|String)\s+(\w+)\s*\(([^)]*)\)/g,
       (_match, funcName, params) => {
         // Remove type annotations from parameters
-        const cleanParams = params.replace(/\b(?:int|long|byte|float|double|boolean|String)\s+/g, "");
+        const cleanParams = params.replace(
+          /\b(?:int|long|byte|float|double|boolean|String)\s+/g,
+          "",
+        );
         return `function ${funcName}(${cleanParams})`;
-      });
+      },
+    );
 
     return code;
   }
@@ -195,14 +206,28 @@ export class ArduinoInterpreter {
   private convertArduinoSyntax(code: string): string {
     // Async timing functions
     code = code.replace(/\bdelay\s*\(/g, "await delay(");
-    code = code.replace(/\bdelayMicroseconds\s*\(/g, "await delayMicroseconds(");
+    code = code.replace(
+      /\bdelayMicroseconds\s*\(/g,
+      "await delayMicroseconds(",
+    );
 
     // Bit operations
-    code = code.replace(/\bbitRead\s*\(\s*([^,]+)\s*,\s*([^)]+)\s*\)/g, "(($1 >> $2) & 1)");
-    code = code.replace(/\bbitWrite\s*\(\s*([^,]+)\s*,\s*([^,]+)\s*,\s*([^)]+)\s*\)/g,
-      "($1 = $3 ? ($1 | (1 << $2)) : ($1 & ~(1 << $2)))");
-    code = code.replace(/\bbitSet\s*\(\s*([^,]+)\s*,\s*([^)]+)\s*\)/g, "($1 |= (1 << $2))");
-    code = code.replace(/\bbitClear\s*\(\s*([^,]+)\s*,\s*([^)]+)\s*\)/g, "($1 &= ~(1 << $2))");
+    code = code.replace(
+      /\bbitRead\s*\(\s*([^,]+)\s*,\s*([^)]+)\s*\)/g,
+      "(($1 >> $2) & 1)",
+    );
+    code = code.replace(
+      /\bbitWrite\s*\(\s*([^,]+)\s*,\s*([^,]+)\s*,\s*([^)]+)\s*\)/g,
+      "($1 = $3 ? ($1 | (1 << $2)) : ($1 & ~(1 << $2)))",
+    );
+    code = code.replace(
+      /\bbitSet\s*\(\s*([^,]+)\s*,\s*([^)]+)\s*\)/g,
+      "($1 |= (1 << $2))",
+    );
+    code = code.replace(
+      /\bbitClear\s*\(\s*([^,]+)\s*,\s*([^)]+)\s*\)/g,
+      "($1 &= ~(1 << $2))",
+    );
 
     // Byte operations
     code = code.replace(/\blowByte\s*\(/g, "(");
@@ -222,7 +247,11 @@ export class ArduinoInterpreter {
   /**
    * Parse program structure to extract setup(), loop(), and global code
    */
-  private parseProgram(code: string): { globals: string; setup: string; loop: string } {
+  private parseProgram(code: string): {
+    globals: string;
+    setup: string;
+    loop: string;
+  } {
     console.log("[Interpreter] Parsing program...");
     console.log("[Interpreter] Code to parse:", code.substring(0, 200));
 
@@ -250,7 +279,8 @@ export class ArduinoInterpreter {
     if (setupStart !== -1) {
       const setupEnd = this.findMatchingBrace(code, setupStart);
       if (setupEnd !== -1) {
-        globals = globals.substring(0, setupStart) + globals.substring(setupEnd + 1);
+        globals =
+          globals.substring(0, setupStart) + globals.substring(setupEnd + 1);
       }
     }
 
@@ -259,7 +289,8 @@ export class ArduinoInterpreter {
     if (loopStart !== -1) {
       const loopEnd = this.findMatchingBrace(globals, loopStart);
       if (loopEnd !== -1) {
-        globals = globals.substring(0, loopStart) + globals.substring(loopEnd + 1);
+        globals =
+          globals.substring(0, loopStart) + globals.substring(loopEnd + 1);
       }
     }
 
@@ -272,8 +303,13 @@ export class ArduinoInterpreter {
    * Extract function body with proper brace matching
    * Handles strings and avoids counting braces inside them
    */
-  private extractFunctionBody(code: string, functionName: string): string | null {
-    const funcRegex = new RegExp(`function\\s+${functionName}\\s*\\(\\s*\\)\\s*\\{`);
+  private extractFunctionBody(
+    code: string,
+    functionName: string,
+  ): string | null {
+    const funcRegex = new RegExp(
+      `function\\s+${functionName}\\s*\\(\\s*\\)\\s*\\{`,
+    );
     const match = code.match(funcRegex);
 
     if (!match || match.index === undefined) {
@@ -285,14 +321,14 @@ export class ArduinoInterpreter {
     let braceCount = 1;
     let i = startIndex;
     let inString = false;
-    let stringChar = '';
+    let stringChar = "";
 
     while (i < code.length && braceCount > 0) {
       const char = code[i];
-      const prevChar = i > 0 ? code[i - 1] : '';
+      const prevChar = i > 0 ? code[i - 1] : "";
 
       // Handle string literals
-      if ((char === '"' || char === "'") && prevChar !== '\\') {
+      if ((char === '"' || char === "'") && prevChar !== "\\") {
         if (!inString) {
           inString = true;
           stringChar = char;
@@ -331,14 +367,14 @@ export class ArduinoInterpreter {
     let braceCount = 1;
     let i = openBrace + 1;
     let inString = false;
-    let stringChar = '';
+    let stringChar = "";
 
     while (i < code.length && braceCount > 0) {
       const char = code[i];
-      const prevChar = i > 0 ? code[i - 1] : '';
+      const prevChar = i > 0 ? code[i - 1] : "";
 
       // Handle string literals
-      if ((char === '"' || char === "'") && prevChar !== '\\') {
+      if ((char === '"' || char === "'") && prevChar !== "\\") {
         if (!inString) {
           inString = true;
           stringChar = char;
@@ -365,7 +401,11 @@ export class ArduinoInterpreter {
   /**
    * Generate executable JavaScript code
    */
-  private generateJavaScript(program: { globals: string; setup: string; loop: string }): string {
+  private generateJavaScript(program: {
+    globals: string;
+    setup: string;
+    loop: string;
+  }): string {
     const jsCode = `
 // ===== Global Variables and Functions =====
 ${program.globals}
