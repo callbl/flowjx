@@ -3,11 +3,10 @@
 import type { TranspileResult, BoardConfig } from "./types";
 
 export class ArduinoInterpreter {
-  private boardConfig: BoardConfig;
   private warnings: string[] = [];
 
-  constructor(boardConfig: BoardConfig) {
-    this.boardConfig = boardConfig;
+  constructor(_boardConfig: BoardConfig) {
+    // Board config may be used in future for board-specific transpilation
   }
 
   /**
@@ -170,7 +169,7 @@ export class ArduinoInterpreter {
 
     // Convert typed functions: int funcName(int x) { → function funcName(x) {
     code = code.replace(/\b(?:int|long|byte|float|double|boolean|String)\s+(\w+)\s*\(([^)]*)\)/g,
-      (match, funcName, params) => {
+      (_match, funcName, params) => {
         // Remove type annotations from parameters
         const cleanParams = params.replace(/\b(?:int|long|byte|float|double|boolean|String)\s+/g, "");
         return `function ${funcName}(${cleanParams})`;

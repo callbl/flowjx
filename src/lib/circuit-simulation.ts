@@ -51,7 +51,6 @@ function buildCircuitGraph(nodes: Node[], edges: Edge[]): Map<string, CircuitNod
 
     internalEdges.forEach((internalEdge) => {
       const fromKey = `${internalEdge.from.nodeId}:${internalEdge.from.handleId}`;
-      const toKey = `${internalEdge.to.nodeId}:${internalEdge.to.handleId}`;
 
       if (!graph.has(fromKey)) graph.set(fromKey, []);
 

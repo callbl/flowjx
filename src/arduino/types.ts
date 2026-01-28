@@ -2,11 +2,13 @@
 
 export type BoardType = "arduino-uno" | "esp32";
 
-export enum PinMode {
-  INPUT = 0,
-  OUTPUT = 1,
-  INPUT_PULLUP = 2,
-}
+export type PinMode = 0 | 1 | 2;
+
+export const PinMode = {
+  INPUT: 0 as PinMode,
+  OUTPUT: 1 as PinMode,
+  INPUT_PULLUP: 2 as PinMode,
+} as const;
 
 export interface PinRuntimeState {
   mode: PinMode;
